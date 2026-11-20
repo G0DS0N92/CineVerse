@@ -224,7 +224,7 @@ const HomePage = () => {
   const activeSlide = upcomingSlides[currentSlide] || upcomingSlides[0];
 
   return (
-    <div>
+    <div className="homepage-wrapper">
       {/* ========================================================
           HERO CAROUSEL SECTION (MATCHING CINEMATIC MOCKUP)
           ======================================================== */}
@@ -436,7 +436,7 @@ const HomePage = () => {
       {/* ========================================================
           TRENDING NOW SECTION (MATCHING REFERENCE MOCKUP)
           ======================================================== */}
-      <section>
+      <section className="homepage-inner-section">
         <div className="section-header-modern">
           <div className="section-title-wrap">
             <div className="section-title-bar" />

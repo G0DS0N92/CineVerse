@@ -24,6 +24,29 @@ const MovieCard = ({
 
   const posterUrl = poster ? `${TMDB_IMG_BASE}${poster}` : null;
 
+  // Determine if the movie is unreleased (future release date)
+  const isUnreleased = (() => {
+    if (!releaseDate) return false;
+    // Parse YYYY-MM-DD or DD/MM/YYYY format
+    let dateObj;
+    if (releaseDate.includes('/')) {
+      const [d, m, y] = releaseDate.split('/');
+      dateObj = new Date(`${y}-${m}-${d}`);
+    } else {
+      dateObj = new Date(releaseDate.split('T')[0]);
+    }
+    return dateObj > new Date();
+  })();
+
+  // Format release date as DD/MM/YYYY for the badge
+  const formattedReleaseDate = (() => {
+    if (!releaseDate) return '';
+    if (releaseDate.includes('/')) return releaseDate;
+    const parts = releaseDate.split('T')[0].split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return releaseDate;
+  })();
+
   return (
     <div className="movie-card">
       {/* Poster Image */}
@@ -44,13 +67,23 @@ const MovieCard = ({
           No Poster Available
         </div>
 
-        {/* Rating Badge */}
-        {rating > 0 && (
+        {/* Rating Badge or Release Date Badge for unreleased movies */}
+        {isUnreleased ? (
+          <div className="movie-date-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span>{formattedReleaseDate}</span>
+          </div>
+        ) : rating > 0 ? (
           <div className="movie-rating-badge">
             <span>★</span>
             <span>{Number(rating).toFixed(1)}</span>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Info Body */}
