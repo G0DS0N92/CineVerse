@@ -56,6 +56,7 @@ const register = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar || '',
       },
     });
   } catch (error) {
@@ -105,6 +106,7 @@ const login = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar || '',
       },
     });
   } catch (error) {
@@ -119,28 +121,41 @@ const getMe = async (req, res, next) => {
   try {
     res.status(200).json({
       success: true,
-      user: req.user,
+      user: {
+        _id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        avatar: req.user.avatar || '',
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update user profile name
+// @desc    Update user profile name and avatar
 // @route   PATCH /api/auth/profile
 // @access  Private (Requires JWT)
 const updateProfile = async (req, res, next) => {
   try {
-    const { name } = req.body;
-    if (!name || !name.trim()) {
-      return res.status(400).json({
+    const { name, avatar } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: 'Name cannot be empty.',
+        message: 'User account not found.',
       });
     }
 
-    const user = await User.findById(req.user._id);
-    user.name = name.trim();
+    if (name && name.trim()) {
+      user.name = name.trim();
+    }
+
+    if (typeof avatar === 'string') {
+      user.avatar = avatar;
+    }
+
     await user.save();
 
     res.status(200).json({
@@ -149,6 +164,7 @@ const updateProfile = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar || '',
       },
     });
   } catch (error) {

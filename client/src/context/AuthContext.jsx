@@ -69,9 +69,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('cineverse_user');
   };
 
-  // Update profile name
-  const updateProfile = async (name) => {
-    const { data } = await API.patch('/auth/profile', { name });
+  // Update profile name and avatar
+  const updateProfile = async (profileData) => {
+    const payload = typeof profileData === 'string' ? { name: profileData } : profileData;
+    const { data } = await API.patch('/auth/profile', payload);
     if (data.success) {
       setUser(data.user);
       localStorage.setItem('cineverse_user', JSON.stringify(data.user));

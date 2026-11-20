@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import API from '../services/api';
 import MovieCard from '../components/MovieCard';
 import ReminderModal from '../components/ReminderModal';
+import ConfirmModal from '../components/ConfirmModal';
 import { Link } from 'react-router-dom';
 
 const STATUS_TABS = ['All', 'Planned to Watch', 'Currently Watching', 'Watched'];
@@ -12,6 +13,7 @@ const WatchlistPage = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [selectedMovieForReminder, setSelectedMovieForReminder] = useState(null);
+  const [movieToDelete, setMovieToDelete] = useState(null);
 
   // Fetch Watchlist items
   const fetchWatchlist = async () => {
@@ -47,9 +49,20 @@ const WatchlistPage = () => {
     }
   };
 
-  // Handle item removal
-  const handleDelete = async (id) => {
-    if (!window.confirm('Remove this movie from your watchlist?')) return;
+  // Request item removal (opens styled cinema prompt)
+  const handleDeleteRequest = (itemOrId) => {
+    if (typeof itemOrId === 'object' && itemOrId !== null) {
+      setMovieToDelete(itemOrId);
+    } else {
+      const found = watchlist.find((item) => item._id === itemOrId);
+      setMovieToDelete(found || { _id: itemOrId });
+    }
+  };
+
+  // Confirm item removal
+  const handleConfirmDelete = async () => {
+    if (!movieToDelete) return;
+    const id = movieToDelete._id;
 
     try {
       await API.delete(`/watchlist/${id}`);
@@ -59,6 +72,8 @@ const WatchlistPage = () => {
     } catch (err) {
       setMessage('Failed to delete item');
       setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setMovieToDelete(null);
     }
   };
 
@@ -158,7 +173,7 @@ const WatchlistPage = () => {
               movie={movie}
               isWatchlistItem={true}
               onStatusChange={handleStatusChange}
-              onDelete={handleDelete}
+              onDelete={() => handleDeleteRequest(movie)}
               onOpenReminder={(m) => setSelectedMovieForReminder(m)}
             />
           ))}
@@ -171,6 +186,21 @@ const WatchlistPage = () => {
         onClose={() => setSelectedMovieForReminder(null)}
         movie={selectedMovieForReminder}
         onSave={handleSaveReminder}
+      />
+
+      {/* Cinema-styled Confirm Removal Modal */}
+      <ConfirmModal
+        isOpen={!!movieToDelete}
+        badgeText="Watchlist Action"
+        title="Remove from Watchlist?"
+        movieTitle={movieToDelete?.title}
+        posterPath={movieToDelete?.posterPath}
+        message="Are you sure you want to remove this movie from your watchlist? Any scheduled reminders and notes for it will be cleared."
+        confirmText="Remove Movie"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setMovieToDelete(null)}
       />
     </div>
   );

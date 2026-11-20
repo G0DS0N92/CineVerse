@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
 import { Link } from 'react-router-dom';
+import ConfirmModal from '../components/ConfirmModal';
 
 const formatDDMMYYYY = (dateStr) => {
   if (!dateStr) return '';
@@ -24,6 +25,7 @@ const RemindersPage = () => {
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [reminderToDelete, setReminderToDelete] = useState(null);
 
   const fetchReminders = async () => {
     try {
@@ -59,8 +61,9 @@ const RemindersPage = () => {
     }
   };
 
-  const handleDeleteReminder = async (id) => {
-    if (!window.confirm('Delete this reminder? (The movie remains in your watchlist)')) return;
+  const handleConfirmDelete = async () => {
+    if (!reminderToDelete) return;
+    const id = reminderToDelete._id;
 
     try {
       // Clear reminder fields
@@ -77,6 +80,8 @@ const RemindersPage = () => {
     } catch (err) {
       setMessage('Failed to delete reminder');
       setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setReminderToDelete(null);
     }
   };
 
@@ -147,22 +152,67 @@ const RemindersPage = () => {
               >
                 {/* Left: Thumbnail and Details */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-                  {r.posterPath ? (
-                    <img
-                      src={`https://image.tmdb.org/t/p/w200${r.posterPath}`}
-                      alt={r.title}
-                      style={{ width: '56px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
-                    />
-                  ) : (
-                    <div style={{ width: '56px', height: '80px', background: '#202b3f', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                      N/A
-                    </div>
-                  )}
+                  <Link
+                    to={r.tmdbId ? `/movies/${r.tmdbId}` : '#'}
+                    style={{ display: 'block', textDecoration: 'none' }}
+                    title={`View details for ${r.title}`}
+                  >
+                    {r.posterPath ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w200${r.posterPath}`}
+                        alt={r.title}
+                        style={{
+                          width: '56px',
+                          height: '80px',
+                          objectFit: 'cover',
+                          borderRadius: 'var(--radius-sm)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s ease',
+                          display: 'block',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '56px',
+                          height: '80px',
+                          background: '#202b3f',
+                          borderRadius: 'var(--radius-sm)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          color: 'var(--text-dim)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        N/A
+                      </div>
+                    )}
+                  </Link>
 
                   <div>
-                    <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '6px' }}>
-                      {r.title}
-                    </h3>
+                    <Link
+                      to={r.tmdbId ? `/movies/${r.tmdbId}` : '#'}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      title={`View details for ${r.title}`}
+                    >
+                      <h3
+                        style={{
+                          fontSize: '1.15rem',
+                          fontWeight: 700,
+                          marginBottom: '6px',
+                          cursor: 'pointer',
+                          transition: 'color 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-primary)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}
+                      >
+                        {r.title}
+                      </h3>
+                    </Link>
 
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '0.9rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                       <span style={{ fontWeight: 500 }}>{formatDDMMYYYY(r.reminderDate)}</span>
@@ -211,7 +261,7 @@ const RemindersPage = () => {
                   </button>
 
                   <button
-                    onClick={() => handleDeleteReminder(r._id)}
+                    onClick={() => setReminderToDelete(r)}
                     className="btn btn-danger btn-sm"
                   >
                     Delete
@@ -222,6 +272,21 @@ const RemindersPage = () => {
           })}
         </div>
       )}
+
+      {/* Cinema Styled Confirm Delete Reminder Modal */}
+      <ConfirmModal
+        isOpen={!!reminderToDelete}
+        badgeText="Movie Reminder"
+        title="Delete this reminder?"
+        movieTitle={reminderToDelete?.title}
+        posterPath={reminderToDelete?.posterPath}
+        message="The scheduled reminder will be cleared, but the movie will remain safely in your watchlist."
+        confirmText="Delete Reminder"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setReminderToDelete(null)}
+      />
     </div>
   );
 };

@@ -102,11 +102,31 @@ const Navbar = () => {
         <div className="nav-auth-buttons">
           {isAuthenticated ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Link to="/profile" className="btn btn-secondary btn-sm" title="View Profile" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+              <Link
+                to="/profile"
+                className="btn btn-secondary btn-sm"
+                title="View Profile"
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name || 'Account'}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '1.5px solid var(--accent-primary)',
+                      display: 'block',
+                    }}
+                  />
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                )}
                 <span>{user?.name || 'Account'}</span>
               </Link>
               <button onClick={handleLogout} className="btn btn-outline btn-sm">

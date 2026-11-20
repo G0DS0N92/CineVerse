@@ -23,8 +23,8 @@ app.use(
 // Respond to preflight requests immediately
 app.options('*', cors());
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Ensure MongoDB Atlas connection is active for each incoming request
 app.use(async (req, res, next) => {

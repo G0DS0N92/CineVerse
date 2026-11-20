@@ -62,48 +62,60 @@ const MovieCard = ({
 
   return (
     <div className="movie-card">
-      {/* Poster Image */}
-      <div className="movie-poster-wrap">
-        {posterUrl ? (
-          <img
-            src={posterUrl}
-            alt={title}
-            className="movie-poster-img"
-            loading="lazy"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
-        ) : null}
-        <div className="poster-placeholder" style={{ display: posterUrl ? 'none' : 'flex' }}>
-          No Poster Available
-        </div>
+      {/* Poster Image - Clickable to Movie Details */}
+      <Link
+        to={id ? `/movies/${id}` : '#'}
+        style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+        title={`View details for ${title}`}
+      >
+        <div className="movie-poster-wrap">
+          {posterUrl ? (
+            <img
+              src={posterUrl}
+              alt={title}
+              className="movie-poster-img"
+              loading="lazy"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div className="poster-placeholder" style={{ display: posterUrl ? 'none' : 'flex' }}>
+            No Poster Available
+          </div>
 
-        {/* Rating Badge or Release Date Badge for unreleased movies */}
-        {isUnreleased ? (
-          <div className="movie-date-badge">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            <span>{formattedReleaseDate}</span>
-          </div>
-        ) : rating > 0 ? (
-          <div className="movie-rating-badge">
-            <span>★</span>
-            <span>{Number(rating).toFixed(1)}</span>
-          </div>
-        ) : null}
-      </div>
+          {/* Rating Badge or Release Date Badge for unreleased movies */}
+          {isUnreleased ? (
+            <div className="movie-date-badge">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span>{formattedReleaseDate}</span>
+            </div>
+          ) : rating > 0 ? (
+            <div className="movie-rating-badge">
+              <span>★</span>
+              <span>{Number(rating).toFixed(1)}</span>
+            </div>
+          ) : null}
+        </div>
+      </Link>
 
       {/* Info Body */}
       <div className="movie-card-info">
-        <h3 className="movie-card-title" title={title}>
-          {title}
-        </h3>
+        <Link
+          to={id ? `/movies/${id}` : '#'}
+          style={{ textDecoration: 'none', color: 'inherit' }}
+          title={`View details for ${title}`}
+        >
+          <h3 className="movie-card-title" title={title} style={{ cursor: 'pointer' }}>
+            {title}
+          </h3>
+        </Link>
 
         <div className="movie-card-meta">
           <span>{year}</span>
