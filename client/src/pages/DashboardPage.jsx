@@ -44,6 +44,10 @@ const DashboardPage = () => {
     );
   }
 
+  const isNewUser =
+    user?.isNewUser === true ||
+    sessionStorage.getItem('cineverse_is_new_user') === 'true';
+
   return (
     <div>
       {/* Welcome Banner */}
@@ -57,10 +61,12 @@ const DashboardPage = () => {
         }}
       >
         <h1 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '8px' }}>
-          Welcome back, {user?.name || 'Cinephile'}!
+          {isNewUser ? `Welcome, ${user?.name || 'Cinephile'}!` : `Welcome back, ${user?.name || 'Cinephile'}!`}
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', maxWidth: '600px' }}>
-          Here is your personal watchlist activity and scheduled watch plan.
+          {isNewUser
+            ? 'Welcome to CineVerse! Explore trending titles, curate your personal watchlists, and schedule watch reminders.'
+            : 'Here is your personal watchlist activity and scheduled watch plan.'}
         </p>
       </div>
 

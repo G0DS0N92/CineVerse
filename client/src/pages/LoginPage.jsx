@@ -32,12 +32,22 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ maxWidth: '440px', margin: '40px auto' }}>
+    <div
+      style={{
+        minHeight: 'calc(100vh - 200px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px 0',
+      }}
+    >
       <div
         style={{
+          width: '100%',
+          maxWidth: '440px',
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-lg)',
-          padding: '36px 30px',
+          padding: '38px 32px',
           border: '1px solid var(--border-color)',
           boxShadow: 'var(--shadow-card)',
         }}

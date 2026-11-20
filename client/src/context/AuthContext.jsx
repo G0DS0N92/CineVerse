@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }) => {
     if (data.success) {
       setToken(data.token);
       setUser(data.user);
+      sessionStorage.setItem('cineverse_is_new_user', 'true');
       localStorage.setItem('cineverse_token', data.token);
       localStorage.setItem('cineverse_user', JSON.stringify(data.user));
     }
@@ -60,6 +61,7 @@ export const AuthProvider = ({ children }) => {
     if (data.success) {
       setToken(data.token);
       setUser(data.user);
+      sessionStorage.removeItem('cineverse_is_new_user');
       localStorage.setItem('cineverse_token', data.token);
       localStorage.setItem('cineverse_user', JSON.stringify(data.user));
     }
@@ -70,6 +72,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
+    sessionStorage.removeItem('cineverse_is_new_user');
     localStorage.removeItem('cineverse_token');
     localStorage.removeItem('cineverse_user');
   };

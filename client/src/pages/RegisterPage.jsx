@@ -176,9 +176,19 @@ const RegisterPage = () => {
   };
 
   return (
-    <div style={{ maxWidth: '460px', margin: '40px auto', padding: '0 16px' }}>
+    <div
+      style={{
+        minHeight: 'calc(100vh - 200px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px 16px',
+      }}
+    >
       <div
         style={{
+          width: '100%',
+          maxWidth: '460px',
           background: 'var(--bg-card)',
           borderRadius: 'var(--radius-lg)',
           padding: '36px 30px',

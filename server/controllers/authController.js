@@ -60,6 +60,7 @@ const register = async (req, res, next) => {
         email: user.email,
         age: user.age || null,
         avatar: user.avatar || '',
+        isNewUser: true,
       },
     });
   } catch (error) {
@@ -111,6 +112,7 @@ const login = async (req, res, next) => {
         email: user.email,
         age: user.age || null,
         avatar: user.avatar || '',
+        isNewUser: false,
       },
     });
   } catch (error) {
@@ -201,6 +203,7 @@ const updateProfile = async (req, res, next) => {
         email: user.email,
         age: user.age || null,
         avatar: user.avatar || '',
+        isNewUser: false,
       },
     });
   } catch (error) {
