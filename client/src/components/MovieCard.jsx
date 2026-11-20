@@ -85,10 +85,7 @@ const MovieCard = ({
   return (
     <div
       className="movie-card"
-      style={{
-        zIndex: dropdownOpen ? 40 : undefined,
-        overflow: dropdownOpen ? 'visible' : 'hidden',
-      }}
+      style={{ zIndex: dropdownOpen ? 40 : undefined }}
     >
       {/* Poster Image - Clickable to Movie Details */}
       <Link
@@ -134,7 +131,7 @@ const MovieCard = ({
       </Link>
 
       {/* Info Body */}
-      <div className="movie-card-info" style={{ minWidth: 0, overflow: 'hidden' }}>
+      <div className="movie-card-info" style={{ minWidth: 0 }}>
         <Link
           to={id ? `/movies/${id}` : '#'}
           style={{

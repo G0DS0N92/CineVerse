@@ -493,7 +493,7 @@ select.form-control option {
 
 .custom-status-menu {
   position: absolute;
-  top: calc(100% + 5px);
+  bottom: calc(100% + 6px);
   left: 0;
   right: 0;
   z-index: 120;
@@ -512,7 +512,7 @@ select.form-control option {
 @keyframes statusMenuFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
