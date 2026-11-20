@@ -3,6 +3,7 @@ import API from '../services/api';
 import MovieCard from '../components/MovieCard';
 import ReminderModal from '../components/ReminderModal';
 import ConfirmModal from '../components/ConfirmModal';
+import Toast from '../components/Toast';
 import { Link } from 'react-router-dom';
 
 const STATUS_TABS = ['All', 'Planned to Watch', 'Currently Watching', 'Watched'];
@@ -11,7 +12,7 @@ const WatchlistPage = () => {
   const [watchlist, setWatchlist] = useState([]);
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
+  const [toast, setToast] = useState(null);
   const [selectedMovieForReminder, setSelectedMovieForReminder] = useState(null);
   const [movieToDelete, setMovieToDelete] = useState(null);
 
@@ -41,11 +42,9 @@ const WatchlistPage = () => {
       setWatchlist((prev) =>
         prev.map((item) => (item._id === id ? { ...item, status: newStatus } : item))
       );
-      setMessage(`Updated status to "${newStatus}"`);
-      setTimeout(() => setMessage(''), 3000);
+      setToast({ message: `Updated status to "${newStatus}"`, type: 'success' });
     } catch (err) {
-      setMessage('Failed to update status');
-      setTimeout(() => setMessage(''), 3000);
+      setToast({ message: 'Failed to update status', type: 'error' });
     }
   };
 
@@ -67,11 +66,9 @@ const WatchlistPage = () => {
     try {
       await API.delete(`/watchlist/${id}`);
       setWatchlist((prev) => prev.filter((item) => item._id !== id));
-      setMessage('Movie removed from watchlist');
-      setTimeout(() => setMessage(''), 3000);
+      setToast({ message: 'Movie removed from watchlist', type: 'success' });
     } catch (err) {
-      setMessage('Failed to delete item');
-      setTimeout(() => setMessage(''), 3000);
+      setToast({ message: 'Failed to delete item', type: 'error' });
     } finally {
       setMovieToDelete(null);
     }
@@ -92,12 +89,10 @@ const WatchlistPage = () => {
         );
         setSelectedMovieForReminder(null);
         window.dispatchEvent(new CustomEvent('cineverse_reminder_updated'));
-        setMessage('Reminder scheduled successfully!');
-        setTimeout(() => setMessage(''), 3000);
+        setToast({ message: 'Reminder scheduled successfully!', type: 'success' });
       }
     } catch (err) {
-      setMessage('Failed to set reminder');
-      setTimeout(() => setMessage(''), 3000);
+      setToast({ message: 'Failed to set reminder', type: 'error' });
     }
   };
 
@@ -123,8 +118,6 @@ const WatchlistPage = () => {
           + Add More Movies
         </Link>
       </div>
-
-      {message && <div className="alert alert-success">{message}</div>}
 
       {/* Status Filter Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
@@ -202,6 +195,8 @@ const WatchlistPage = () => {
         onConfirm={handleConfirmDelete}
         onCancel={() => setMovieToDelete(null)}
       />
+
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 };

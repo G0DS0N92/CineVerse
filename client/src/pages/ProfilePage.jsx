@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Toast from '../components/Toast';
 
 const ProfilePage = () => {
   const { user, updateProfile, logout } = useAuth();
@@ -9,7 +10,7 @@ const ProfilePage = () => {
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || '');
-  const [message, setMessage] = useState('');
+  const [toast, setToast] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -89,7 +90,6 @@ const ProfilePage = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    setMessage('');
     setError('');
 
     const parsedAge = age ? Number(age) : null;
@@ -107,10 +107,10 @@ const ProfilePage = () => {
         age: parsedAge,
         avatar,
       });
-      setMessage('Profile updated successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      setToast({ message: 'Profile details updated successfully!', type: 'success' });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update profile');
+      setToast({ message: err.response?.data?.message || 'Failed to update profile', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -267,7 +267,6 @@ const ProfilePage = () => {
           </p>
         </div>
 
-        {message && <div className="alert alert-success">{message}</div>}
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={handleUpdate}>
@@ -333,6 +332,8 @@ const ProfilePage = () => {
           </button>
         </div>
       </div>
+
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 };

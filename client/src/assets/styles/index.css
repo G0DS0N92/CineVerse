@@ -300,12 +300,15 @@ a {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: var(--text-dim);
   font-size: 0.9rem;
   text-align: center;
-  padding: 20px;
+  padding: 16px;
+  background: radial-gradient(circle at center, #161e2d 0%, #0a0e17 100%);
+  user-select: none;
 }
 
 .movie-rating-badge {
@@ -348,12 +351,11 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
   color: var(--text-muted);
   font-size: 0.82rem;
   margin-bottom: 10px;
   flex-wrap: nowrap;
-  overflow: hidden;
 }
 
 .movie-card-actions {
@@ -366,8 +368,8 @@ a {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
-  font-size: 0.68rem;
+  padding: 2px 6px;
+  font-size: 0.65rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
   white-space: nowrap;

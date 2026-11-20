@@ -23,10 +23,17 @@ const MovieCard = ({
   // and MongoDB Watchlist item format (posterPath, voteAverage)
   const id = movie.tmdbId || movie.id;
   const title = movie.title || 'Untitled';
-  const poster = movie.posterPath || movie.poster_path;
+  const poster = movie.posterPath || movie.poster_path || movie.backdropPath || movie.backdrop_path;
   const rating = movie.voteAverage || movie.vote_average || 0;
   const releaseDate = movie.releaseDate || movie.release_date || '';
-  const year = releaseDate ? releaseDate.split('-')[0] : 'N/A';
+  const year = (() => {
+    if (!releaseDate) return 'N/A';
+    if (releaseDate.includes('/')) {
+      const parts = releaseDate.split('/');
+      return parts[2] || parts[0];
+    }
+    return releaseDate.split('-')[0] || 'N/A';
+  })();
 
   const posterUrl = poster ? `${TMDB_IMG_BASE}${poster}` : null;
 
@@ -110,7 +117,32 @@ const MovieCard = ({
             />
           ) : null}
           <div className="poster-placeholder" style={{ display: posterUrl ? 'none' : 'flex' }}>
-            No Poster Available
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ opacity: 0.35, marginBottom: '6px' }}
+            >
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+              <line x1="7" y1="2" x2="7" y2="22" />
+              <line x1="17" y1="2" x2="17" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <line x1="2" y1="7" x2="7" y2="7" />
+              <line x1="2" y1="17" x2="7" y2="17" />
+              <line x1="17" y1="17" x2="22" y2="17" />
+              <line x1="17" y1="7" x2="22" y2="7" />
+            </svg>
+            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center', padding: '0 8px', lineHeight: 1.25 }}>
+              {title}
+            </span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)', marginTop: '4px' }}>
+              No Poster Available
+            </span>
           </div>
 
           {/* Rating Badge or Release Date Badge for unreleased movies */}
@@ -151,8 +183,8 @@ const MovieCard = ({
           </h3>
         </Link>
 
-        <div className="movie-card-meta">
-          <span>{year}</span>
+        <div className="movie-card-meta" style={{ overflow: 'visible' }}>
+          <span style={{ flexShrink: 0, fontWeight: 500 }}>{year}</span>
           {isWatchlistItem && (
             <span
               className={`status-badge ${
@@ -162,6 +194,7 @@ const MovieCard = ({
                   ? 'status-watching'
                   : 'status-planned'
               }`}
+              style={{ flexShrink: 0 }}
             >
               {movie.status}
             </span>
