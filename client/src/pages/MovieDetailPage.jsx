@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ReminderModal from '../components/ReminderModal';
+import Toast from '../components/Toast';
 
 const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 const TMDB_POSTER_BASE = 'https://image.tmdb.org/t/p/w500';
@@ -15,7 +16,7 @@ const MovieDetailPage = () => {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isReminderOpen, setIsReminderOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -54,11 +55,9 @@ const MovieDetailPage = () => {
       };
 
       await API.post('/watchlist', payload);
-      setMessage('✅ Movie added to your watchlist!');
-      setTimeout(() => setMessage(''), 3500);
+      setToast({ message: `Added "${movie.title}" to your watchlist!`, type: 'success' });
     } catch (err) {
-      setMessage(`⚠️ ${err.response?.data?.message || 'Could not add to watchlist'}`);
-      setTimeout(() => setMessage(''), 3500);
+      setToast({ message: err.response?.data?.message || 'Could not add to watchlist', type: 'error' });
     }
   };
 
@@ -84,12 +83,10 @@ const MovieDetailPage = () => {
 
       await API.post('/watchlist', payload);
       setIsReminderOpen(false);
-      setMessage(`⏰ Reminder set for ${reminderData.reminderDate}!`);
-      setTimeout(() => setMessage(''), 3500);
+      setToast({ message: `Reminder set for ${reminderData.reminderDate}!`, type: 'success' });
     } catch (err) {
-      setMessage(`⚠️ ${err.response?.data?.message || 'Failed to save reminder'}`);
       setIsReminderOpen(false);
-      setTimeout(() => setMessage(''), 3500);
+      setToast({ message: err.response?.data?.message || 'Failed to save reminder', type: 'error' });
     }
   };
 
@@ -122,8 +119,6 @@ const MovieDetailPage = () => {
       <Link to="/discover" className="btn btn-outline btn-sm" style={{ marginBottom: '20px' }}>
         &larr; Back to Movies
       </Link>
-
-      {message && <div className="alert alert-success">{message}</div>}
 
       {/* Main Details Hero Container */}
       <div
@@ -203,12 +198,12 @@ const MovieDetailPage = () => {
               </span>
 
               <span style={{ color: 'var(--text-muted)' }}>
-                📅 {movie.release_date || 'Unknown Date'}
+                {movie.release_date || 'Unknown Date'}
               </span>
 
               {movie.runtime > 0 && (
                 <span style={{ color: 'var(--text-muted)' }}>
-                  ⏱️ {movie.runtime} min
+                  {movie.runtime} min
                 </span>
               )}
             </div>
@@ -247,7 +242,7 @@ const MovieDetailPage = () => {
               </button>
 
               <button onClick={() => setIsReminderOpen(true)} className="btn btn-secondary">
-                ⏰ Schedule Reminder
+                Schedule Reminder
               </button>
             </div>
           </div>
@@ -261,6 +256,9 @@ const MovieDetailPage = () => {
         movie={movie}
         onSave={handleSaveReminder}
       />
+
+      {/* Center-Bottom Floating Toast Notification */}
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 };

@@ -49,7 +49,7 @@ const DashboardPage = () => {
         }}
       >
         <h1 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '8px' }}>
-          Welcome back, {user?.name || 'Cinephile'}! 🍿
+          Welcome back, {user?.name || 'Cinephile'}!
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', maxWidth: '600px' }}>
           Here is your personal watchlist activity and scheduled watch plan.
@@ -61,25 +61,44 @@ const DashboardPage = () => {
         <StatCard
           title="Total Movies Saved"
           value={stats?.totalSaved || 0}
-          icon="📚"
+          icon={
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+          }
           color="var(--accent-blue)"
         />
         <StatCard
           title="Planned to Watch"
           value={stats?.planned || 0}
-          icon="⏳"
+          icon={
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          }
           color="var(--accent-gold)"
         />
         <StatCard
           title="Currently Watching"
           value={stats?.currentlyWatching || 0}
-          icon="▶️"
+          icon={
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="10 8 16 12 10 16 10 8" />
+            </svg>
+          }
           color="var(--accent-primary)"
         />
         <StatCard
           title="Movies Watched"
           value={stats?.watched || 0}
-          icon="✅"
+          icon={
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          }
           color="var(--accent-green)"
         />
       </div>
@@ -96,7 +115,7 @@ const DashboardPage = () => {
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>⏰ Upcoming Reminders</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Upcoming Reminders</h2>
             <Link to="/reminders" className="btn btn-outline btn-sm">
               View All
             </Link>
@@ -127,7 +146,7 @@ const DashboardPage = () => {
                   <div>
                     <strong style={{ fontSize: '0.95rem' }}>{rem.title}</strong>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      📅 {rem.reminderDate} at {rem.reminderTime || '20:00'}
+                      {rem.reminderDate} at {rem.reminderTime || '20:00'}
                     </div>
                   </div>
                   <span className="status-badge status-planned">Pending</span>
@@ -147,7 +166,7 @@ const DashboardPage = () => {
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>🎬 Recently Added</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Recently Added</h2>
             <Link to="/watchlist" className="btn btn-outline btn-sm">
               Watchlist &rarr;
             </Link>
@@ -183,8 +202,8 @@ const DashboardPage = () => {
                         style={{ width: '36px', height: '52px', objectFit: 'cover', borderRadius: '4px' }}
                       />
                     ) : (
-                      <div style={{ width: '36px', height: '52px', background: '#202b3f', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        🎬
+                      <div style={{ width: '36px', height: '52px', background: '#202b3f', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', color: 'var(--text-dim)' }}>
+                        N/A
                       </div>
                     )}
                     <div>

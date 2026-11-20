@@ -1,31 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
 import MovieCard from '../components/MovieCard';
+import Toast from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const CATEGORIES = [
   {
     id: 'trending',
-    label: '🔥 Trending',
+    label: 'Trending',
     defaultSort: 'popularity',
     subtitle: 'Viral buzz & most searched movies this week',
   },
   {
     id: 'now-playing',
-    label: '🎬 Now Playing',
+    label: 'Now Playing',
     defaultSort: 'popularity',
     subtitle: 'Movies currently playing in theatres and newly released',
   },
   {
     id: 'upcoming',
-    label: '🚀 Upcoming',
+    label: 'Upcoming',
     defaultSort: 'releaseDate',
     subtitle: 'Unreleased movies coming to theatres in the future',
   },
   {
     id: 'top-rated',
-    label: '🏆 Top Rated',
+    label: 'Top Rated',
     defaultSort: 'rating',
     subtitle: 'All-time cinematic masterpieces with highest ratings',
   },
@@ -52,7 +53,7 @@ const DiscoveryPage = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('popularity');
-  const [message, setMessage] = useState('');
+  const [toast, setToast] = useState(null);
 
   // Fetch movies based on Category or Search
   useEffect(() => {
@@ -103,12 +104,16 @@ const DiscoveryPage = () => {
         status: 'Planned to Watch',
       };
 
-      const { data } = await API.post('/watchlist', payload);
-      setMessage(`✅ Added "${movie.title}" to your watchlist!`);
-      setTimeout(() => setMessage(''), 3500);
+      await API.post('/watchlist', payload);
+      setToast({
+        message: `Added "${movie.title}" to your watchlist!`,
+        type: 'success',
+      });
     } catch (err) {
-      setMessage(`⚠️ ${err.response?.data?.message || 'Could not add to watchlist'}`);
-      setTimeout(() => setMessage(''), 3500);
+      setToast({
+        message: err.response?.data?.message || 'Could not add to watchlist',
+        type: 'error',
+      });
     }
   };
 
@@ -160,15 +165,23 @@ const DiscoveryPage = () => {
           Search real-time TMDB catalogue or browse by trending categories
         </p>
 
-        {message && (
-          <div className="alert alert-success" style={{ animation: 'modalFadeIn 0.2s' }}>
-            {message}
-          </div>
-        )}
-
         {/* Live Search Bar */}
         <div className="search-bar-wrap">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
           <input
             type="text"
             className="search-input"
@@ -204,8 +217,8 @@ const DiscoveryPage = () => {
             ))}
           </div>
           {!searchQuery && (
-            <p style={{ color: 'var(--text-dim)', fontSize: '0.82rem', marginTop: '6px', marginLeft: '2px' }}>
-              ℹ️ {CATEGORIES.find((c) => c.id === activeCategory)?.subtitle}
+            <p className="category-subtitle">
+              {CATEGORIES.find((c) => c.id === activeCategory)?.subtitle}
             </p>
           )}
         </div>
@@ -247,7 +260,28 @@ const DiscoveryPage = () => {
         </div>
       ) : filteredMovies.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">🎬</div>
+          <div className="empty-icon">
+            <svg
+              width="44"
+              height="44"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ opacity: 0.6 }}
+            >
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+              <line x1="7" y1="2" x2="7" y2="22" />
+              <line x1="17" y1="2" x2="17" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <line x1="2" y1="7" x2="7" y2="7" />
+              <line x1="2" y1="17" x2="7" y2="17" />
+              <line x1="17" y1="17" x2="22" y2="17" />
+              <line x1="17" y1="7" x2="22" y2="7" />
+            </svg>
+          </div>
           <h3>No movies found</h3>
           <p>Try a different search keyword or category.</p>
         </div>
@@ -262,6 +296,9 @@ const DiscoveryPage = () => {
           ))}
         </div>
       )}
+
+      {/* Center-Bottom Floating Toast Notification */}
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 };

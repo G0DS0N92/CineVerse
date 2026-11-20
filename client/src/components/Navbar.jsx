@@ -16,7 +16,27 @@ const Navbar = () => {
       <div className="navbar-container">
         {/* Brand Logo */}
         <Link to="/" className="brand-logo">
-          <span className="brand-icon">🎬</span>
+          <span className="brand-icon" style={{ display: 'flex', alignItems: 'center' }}>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--accent-primary)"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+              <line x1="7" y1="2" x2="7" y2="22" />
+              <line x1="17" y1="2" x2="17" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <line x1="2" y1="7" x2="7" y2="7" />
+              <line x1="2" y1="17" x2="7" y2="17" />
+              <line x1="17" y1="17" x2="22" y2="17" />
+              <line x1="17" y1="7" x2="22" y2="7" />
+            </svg>
+          </span>
           <span>Cine<span className="brand-highlight">Verse</span></span>
         </Link>
 
@@ -58,8 +78,12 @@ const Navbar = () => {
         <div className="nav-auth-buttons">
           {isAuthenticated ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Link to="/profile" className="btn btn-secondary btn-sm" title="View Profile">
-                👤 {user?.name || 'Account'}
+              <Link to="/profile" className="btn btn-secondary btn-sm" title="View Profile" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span>{user?.name || 'Account'}</span>
               </Link>
               <button onClick={handleLogout} className="btn btn-outline btn-sm">
                 Log Out

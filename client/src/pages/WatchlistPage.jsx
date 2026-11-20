@@ -138,7 +138,11 @@ const WatchlistPage = () => {
         </div>
       ) : filteredList.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">🎬</div>
+          <div className="empty-icon">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
           <h3>No movies in "{activeTab}"</h3>
           <p>Explore trending movies and add them to your collection!</p>
           <Link to="/discover" className="btn btn-primary">

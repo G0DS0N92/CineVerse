@@ -88,7 +88,12 @@ const RemindersPage = () => {
         </div>
       ) : reminders.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">⏰</div>
+          <div className="empty-icon">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
           <h3>No reminders scheduled</h3>
           <p>Add reminders to movies in your watchlist so you get notified when to watch!</p>
           <Link to="/watchlist" className="btn btn-primary">
@@ -126,8 +131,8 @@ const RemindersPage = () => {
                       style={{ width: '56px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
                     />
                   ) : (
-                    <div style={{ width: '56px', height: '80px', background: '#202b3f', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      🎬
+                    <div style={{ width: '56px', height: '80px', background: '#202b3f', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                      N/A
                     </div>
                   )}
 
@@ -137,13 +142,13 @@ const RemindersPage = () => {
                     </h3>
 
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                      <span>📅 {r.reminderDate}</span>
-                      <span>⏱️ {r.reminderTime || '20:00'}</span>
+                      <span>{r.reminderDate}</span>
+                      <span>{r.reminderTime || '20:00'}</span>
                       {isOverdue && (
-                        <span style={{ color: '#ef4444', fontWeight: 600 }}>⚠️ Overdue</span>
+                        <span style={{ color: '#ef4444', fontWeight: 600 }}>Overdue</span>
                       )}
                       {isCompleted && (
-                        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>✓ Watched/Done</span>
+                        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>Completed</span>
                       )}
                     </div>
 
@@ -161,7 +166,7 @@ const RemindersPage = () => {
                     onClick={() => handleToggleComplete(r)}
                     className={`btn btn-sm ${isCompleted ? 'btn-secondary' : 'btn-primary'}`}
                   >
-                    {isCompleted ? 'Mark Pending' : '✓ Complete'}
+                    {isCompleted ? 'Mark Pending' : 'Mark Completed'}
                   </button>
 
                   <button

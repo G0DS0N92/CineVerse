@@ -39,7 +39,7 @@ const MovieCard = ({
           />
         ) : null}
         <div className="poster-placeholder" style={{ display: posterUrl ? 'none' : 'flex' }}>
-          🎬 No Poster Available
+          No Poster Available
         </div>
 
         {/* Rating Badge */}
@@ -97,7 +97,7 @@ const MovieCard = ({
                 onClick={() => onOpenReminder && onOpenReminder(movie)}
                 title="Schedule Watch Reminder"
               >
-                ⏰ {movie.reminderDate ? 'Edit Reminder' : 'Remind'}
+                {movie.reminderDate ? 'Edit Reminder' : 'Remind'}
               </button>
 
               <button
@@ -106,7 +106,7 @@ const MovieCard = ({
                 onClick={() => onDelete && onDelete(movie._id)}
                 title="Remove from Watchlist"
               >
-                ✕
+                &times;
               </button>
             </div>
           </div>

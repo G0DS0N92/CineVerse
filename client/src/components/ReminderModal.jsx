@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import CustomDatePicker from './CustomDatePicker';
 
 const TIME_PRESETS = [
-  { label: '🌅 15:00', time: '15:00' },
-  { label: '🍿 20:00', time: '20:00' },
-  { label: '🌙 22:00', time: '22:00' },
+  { label: '15:00', time: '15:00' },
+  { label: '20:00', time: '20:00' },
+  { label: '22:00', time: '22:00' },
 ];
 
 const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
@@ -52,10 +52,9 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
 
         {/* Modal Header */}
         <div style={{ marginBottom: '18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '1.4rem' }}>⏰</span>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>Schedule Movie Watch</h2>
-          </div>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '4px' }}>
+            Schedule Movie Watch
+          </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
             Set a reminder for <strong style={{ color: 'var(--text-main)' }}>{movieTitle}</strong>
           </p>
@@ -70,7 +69,7 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
               </label>
               {reminderDate && (
                 <span className="selected-date-badge">
-                  📅 {reminderDate}
+                  {reminderDate}
                 </span>
               )}
             </div>
@@ -130,7 +129,7 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
               Cancel
             </button>
             <button type="submit" className="btn btn-primary" style={{ minWidth: '140px' }}>
-              ✓ Save Reminder
+              Save Reminder
             </button>
           </div>
         </form>
