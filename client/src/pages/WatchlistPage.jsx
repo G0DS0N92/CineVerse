@@ -76,7 +76,8 @@ const WatchlistPage = () => {
           )
         );
         setSelectedMovieForReminder(null);
-        setMessage('⏰ Reminder scheduled successfully!');
+        window.dispatchEvent(new CustomEvent('cineverse_reminder_updated'));
+        setMessage('Reminder scheduled successfully!');
         setTimeout(() => setMessage(''), 3000);
       }
     } catch (err) {

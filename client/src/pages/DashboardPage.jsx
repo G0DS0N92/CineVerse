@@ -5,6 +5,14 @@ import StatCard from '../components/StatCard';
 import MovieCard from '../components/MovieCard';
 import { Link } from 'react-router-dom';
 
+const formatDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  const clean = dateStr.split('T')[0];
+  const parts = clean.split('-');
+  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  return dateStr;
+};
+
 const DashboardPage = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
@@ -146,7 +154,7 @@ const DashboardPage = () => {
                   <div>
                     <strong style={{ fontSize: '0.95rem' }}>{rem.title}</strong>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      {rem.reminderDate} at {rem.reminderTime || '20:00'}
+                      {formatDDMMYYYY(rem.reminderDate)} at {rem.reminderTime || '20:00'}
                     </div>
                   </div>
                   <span className="status-badge status-planned">Pending</span>

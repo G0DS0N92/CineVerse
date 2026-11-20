@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import ReminderNotificationListener from './components/ReminderNotificationListener';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -21,6 +22,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="app-layout">
+          <ReminderNotificationListener />
           <Navbar />
           <main className="main-content">
             <Routes>

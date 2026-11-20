@@ -58,6 +58,21 @@ const addToWatchlist = async (req, res, next) => {
     });
 
     if (existing) {
+      // If user is adding/updating a reminder on a movie already in their watchlist
+      if (reminderDate !== undefined && reminderDate !== '') {
+        existing.reminderDate = reminderDate;
+        existing.reminderTime = reminderTime || '20:00';
+        existing.reminderStatus = 'pending';
+        if (notes !== undefined) existing.notes = notes;
+        await existing.save();
+
+        return res.status(200).json({
+          success: true,
+          message: 'Movie reminder updated in your watchlist!',
+          data: existing,
+        });
+      }
+
       return res.status(400).json({
         success: false,
         message: 'This movie is already in your watchlist!',

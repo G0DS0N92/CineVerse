@@ -129,8 +129,10 @@ const MovieDetailPage = () => {
       };
 
       await API.post('/watchlist', payload);
+      setIsInWatchlist(true);
       setIsReminderOpen(false);
-      setToast({ message: `Reminder set for ${reminderData.reminderDate}!`, type: 'success' });
+      window.dispatchEvent(new CustomEvent('cineverse_reminder_updated'));
+      setToast({ message: `Reminder set for ${formatToDDMMYYYY(reminderData.reminderDate)}!`, type: 'success' });
     } catch (err) {
       setIsReminderOpen(false);
       setToast({ message: err.response?.data?.message || 'Failed to save reminder', type: 'error' });

@@ -7,6 +7,14 @@ const TIME_PRESETS = [
   { label: '22:00', time: '22:00' },
 ];
 
+const formatDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  const clean = dateStr.split('T')[0];
+  const parts = clean.split('-');
+  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  return dateStr;
+};
+
 const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
   const [reminderDate, setReminderDate] = useState('');
   const [reminderTime, setReminderTime] = useState('20:00');
@@ -29,6 +37,12 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
     if (!reminderDate) {
       alert('Please select a reminder date from the calendar');
       return;
+    }
+
+    if ('Notification' in window && Notification.permission === 'default') {
+      try {
+        Notification.requestPermission();
+      } catch (err) {}
     }
 
     onSave({
@@ -69,7 +83,7 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
               </label>
               {reminderDate && (
                 <span className="selected-date-badge">
-                  {reminderDate}
+                  {formatDDMMYYYY(reminderDate)}
                 </span>
               )}
             </div>

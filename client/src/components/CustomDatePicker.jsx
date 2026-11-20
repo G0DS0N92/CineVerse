@@ -122,7 +122,7 @@ const CustomDatePicker = ({ selectedDate, onDateSelect }) => {
             onClick={handleNextMonth}
             title="Next Month"
           >
-            &#8242;
+            &#8250;
           </button>
         </div>
       </div>
