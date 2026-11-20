@@ -28,7 +28,9 @@ export const sendVerificationOTP = async (toEmail, toName, otpCode) => {
   try {
     const templateParams = {
       to_email: toEmail,
+      email: toEmail,
       to_name: toName || 'Movie Fan',
+      name: toName || 'Movie Fan',
       otp_code: otpCode,
       expiry_minutes: '5',
     };
