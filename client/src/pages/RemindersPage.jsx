@@ -1,0 +1,183 @@
+import React, { useState, useEffect } from 'react';
+import API from '../services/api';
+import { Link } from 'react-router-dom';
+
+const RemindersPage = () => {
+  const [reminders, setReminders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState('');
+
+  const fetchReminders = async () => {
+    try {
+      setLoading(true);
+      const { data } = await API.get('/watchlist/reminders');
+      if (data.success) {
+        setReminders(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching reminders', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReminders();
+  }, []);
+
+  const handleToggleComplete = async (reminder) => {
+    try {
+      const newStatus = reminder.reminderStatus === 'completed' ? 'pending' : 'completed';
+      await API.patch(`/watchlist/${reminder._id}`, { reminderStatus: newStatus });
+      setReminders((prev) =>
+        prev.map((r) => (r._id === reminder._id ? { ...r, reminderStatus: newStatus } : r))
+      );
+      setMessage(`Reminder marked as ${newStatus}!`);
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setMessage('Failed to update reminder status');
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const handleDeleteReminder = async (id) => {
+    if (!window.confirm('Delete this reminder? (The movie remains in your watchlist)')) return;
+
+    try {
+      // Clear reminder fields
+      await API.patch(`/watchlist/${id}`, {
+        reminderDate: '',
+        reminderTime: '',
+        reminderStatus: 'none',
+        notes: '',
+      });
+      setReminders((prev) => prev.filter((r) => r._id !== id));
+      setMessage('Reminder cleared!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setMessage('Failed to delete reminder');
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '6px' }}>
+            ⏰ Movie Reminders
+          </h1>
+          <p style={{ color: 'var(--text-muted)' }}>
+            Never miss a movie night. Scheduled dates, times, and personal notes.
+          </p>
+        </div>
+
+        <Link to="/watchlist" className="btn btn-secondary">
+          Go to Watchlist
+        </Link>
+      </div>
+
+      {message && <div className="alert alert-success">{message}</div>}
+
+      {loading ? (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Fetching scheduled reminders...</p>
+        </div>
+      ) : reminders.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">⏰</div>
+          <h3>No reminders scheduled</h3>
+          <p>Add reminders to movies in your watchlist so you get notified when to watch!</p>
+          <Link to="/watchlist" className="btn btn-primary">
+            Schedule a Reminder
+          </Link>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {reminders.map((r) => {
+            const isOverdue = r.reminderDate < today && r.reminderStatus !== 'completed';
+            const isCompleted = r.reminderStatus === 'completed';
+
+            return (
+              <div
+                key={r._id}
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '20px 24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '20px',
+                  flexWrap: 'wrap',
+                  opacity: isCompleted ? 0.6 : 1,
+                }}
+              >
+                {/* Left: Thumbnail and Details */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                  {r.posterPath ? (
+                    <img
+                      src={`https://image.tmdb.org/t/p/w200${r.posterPath}`}
+                      alt={r.title}
+                      style={{ width: '56px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
+                    />
+                  ) : (
+                    <div style={{ width: '56px', height: '80px', background: '#202b3f', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      🎬
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '4px' }}>
+                      {r.title}
+                    </h3>
+
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                      <span>📅 {r.reminderDate}</span>
+                      <span>⏱️ {r.reminderTime || '20:00'}</span>
+                      {isOverdue && (
+                        <span style={{ color: '#ef4444', fontWeight: 600 }}>⚠️ Overdue</span>
+                      )}
+                      {isCompleted && (
+                        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>✓ Watched/Done</span>
+                      )}
+                    </div>
+
+                    {r.notes && (
+                      <p style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--text-dim)', fontStyle: 'italic' }}>
+                        Note: "{r.notes}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right: Actions */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => handleToggleComplete(r)}
+                    className={`btn btn-sm ${isCompleted ? 'btn-secondary' : 'btn-primary'}`}
+                  >
+                    {isCompleted ? 'Mark Pending' : '✓ Complete'}
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteReminder(r._id)}
+                    className="btn btn-danger btn-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RemindersPage;
