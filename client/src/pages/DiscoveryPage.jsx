@@ -70,6 +70,8 @@ const DiscoveryPage = () => {
   const [toast, setToast] = useState(null);
   const [watchlistIds, setWatchlistIds] = useState(new Set());
   const observerTarget = React.useRef(null);
+  const isFetchingRef = React.useRef(false);
+  const pageRef = React.useRef(1);
 
   // Load user's saved watchlist IDs to show live toggle state (+ Watchlist vs Remove)
   useEffect(() => {
@@ -91,50 +93,39 @@ const DiscoveryPage = () => {
     fetchUserWatchlist();
   }, [isAuthenticated]);
 
-  // Initial fetch: loads Page 1 and Page 2 for a full rich grid
+  // Initial fetch: loads Page 1 in clean sequence
   useEffect(() => {
     let isCancelled = false;
 
     const fetchInitialMovies = async () => {
       setLoading(true);
+      pageRef.current = 1;
       setPage(1);
       setHasMore(true);
+      isFetchingRef.current = false;
 
       try {
         const ep1 =
           searchQuery.trim().length > 1
             ? `/movies/search?query=${encodeURIComponent(searchQuery.trim())}&page=1`
             : `/movies/${activeCategory}?page=1`;
-        const ep2 =
-          searchQuery.trim().length > 1
-            ? `/movies/search?query=${encodeURIComponent(searchQuery.trim())}&page=2`
-            : `/movies/${activeCategory}?page=2`;
 
-        const [res1, res2] = await Promise.allSettled([API.get(ep1), API.get(ep2)]);
+        const { data } = await API.get(ep1);
         if (isCancelled) return;
 
-        let combined = [];
-        if (res1.status === 'fulfilled' && res1.value.data.success) {
-          combined = [...res1.value.data.data];
-        }
-        if (res2.status === 'fulfilled' && res2.value.data.success) {
-          combined = [...combined, ...res2.value.data.data];
-          setPage(2);
-        } else {
-          setPage(1);
-        }
+        if (data.success && Array.isArray(data.data)) {
+          // Strictly deduplicate movies by ID
+          const seen = new Set();
+          const unique = data.data.filter((m) => {
+            if (seen.has(m.id)) return false;
+            seen.add(m.id);
+            return true;
+          });
 
-        // Deduplicate movies by ID
-        const seen = new Set();
-        const unique = combined.filter((m) => {
-          if (seen.has(m.id)) return false;
-          seen.add(m.id);
-          return true;
-        });
-
-        setMovies(unique);
-        if (unique.length === 0) {
-          setHasMore(false);
+          setMovies(unique);
+          if (unique.length === 0 || unique.length < 10) {
+            setHasMore(false);
+          }
         }
       } catch (err) {
         console.error('Error fetching discovery movies', err);
@@ -154,11 +145,13 @@ const DiscoveryPage = () => {
     };
   }, [activeCategory, searchQuery]);
 
-  // Load next page of movies when infinite scroll triggers
+  // Load next page of movies sequentially when infinite scroll triggers
   const loadMoreMovies = async () => {
-    if (loading || loadingMore || !hasMore) return;
+    if (isFetchingRef.current || loading || loadingMore || !hasMore) return;
+    isFetchingRef.current = true;
     setLoadingMore(true);
-    const nextPage = page + 1;
+
+    const nextPage = pageRef.current + 1;
 
     try {
       const endpoint =
@@ -173,6 +166,7 @@ const DiscoveryPage = () => {
           const newUnique = data.data.filter((m) => !seen.has(m.id));
           return [...prev, ...newUnique];
         });
+        pageRef.current = nextPage;
         setPage(nextPage);
       } else {
         setHasMore(false);
@@ -182,25 +176,26 @@ const DiscoveryPage = () => {
       setHasMore(false);
     } finally {
       setLoadingMore(false);
+      isFetchingRef.current = false;
     }
   };
 
-  // IntersectionObserver for seamless infinite scrolling
+  // IntersectionObserver for seamless sequential infinite scrolling
   useEffect(() => {
     if (!observerTarget.current || !hasMore || loading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !loadingMore && hasMore) {
+        if (entries[0].isIntersecting && !isFetchingRef.current && hasMore) {
           loadMoreMovies();
         }
       },
-      { rootMargin: '350px' }
+      { rootMargin: '250px' }
     );
 
     observer.observe(observerTarget.current);
     return () => observer.disconnect();
-  }, [hasMore, loading, loadingMore, page, activeCategory, searchQuery]);
+  }, [hasMore, loading, activeCategory, searchQuery]);
 
   // Add Movie to Watchlist
   const handleAddToWatchlist = async (movie) => {
@@ -266,38 +261,42 @@ const DiscoveryPage = () => {
     setActiveCategory(cat.id);
     setSearchQuery('');
     setSortBy(cat.defaultSort);
+    pageRef.current = 1;
+    setPage(1);
   };
 
-  // Filter & Sort movies on client side
+  const handleSortChange = (newSort) => {
+    setSortBy(newSort);
+    // Sort movies in-place when user explicitly changes sort dropdown
+    setMovies((prev) => {
+      return [...prev].sort((a, b) => {
+        if (newSort === 'rating') {
+          const diff = (b.vote_average || 0) - (a.vote_average || 0);
+          if (Math.abs(diff) > 0.01) return diff;
+          return (b.vote_count || 0) - (a.vote_count || 0);
+        }
+        if (newSort === 'releaseDate') {
+          return new Date(b.release_date || 0) - new Date(a.release_date || 0);
+        }
+        if (newSort === 'title') {
+          return (a.title || '').localeCompare(b.title || '');
+        }
+        return (b.popularity || 0) - (a.popularity || 0);
+      });
+    });
+  };
+
+  // Filter movies on client side while preserving strict sequential ordering
   const today = new Date().toISOString().split('T')[0];
 
-  const filteredMovies = movies
-    .filter((m) => {
-      // In Upcoming category, guarantee only unreleased future movies (release date >= today)
-      if (activeCategory === 'upcoming' && m.release_date && m.release_date < today) {
-        return false;
-      }
-      if (selectedGenre === 'all') return true;
-      return m.genre_ids && m.genre_ids.includes(Number(selectedGenre));
-    })
-    .sort((a, b) => {
-      if (sortBy === 'rating') {
-        const diff = (b.vote_average || 0) - (a.vote_average || 0);
-        if (Math.abs(diff) > 0.01) return diff;
-        return (b.vote_count || 0) - (a.vote_count || 0);
-      }
-      if (sortBy === 'releaseDate') {
-        // Upcoming: nearest future release first (soonest upcoming at the top)
-        if (activeCategory === 'upcoming') {
-          return new Date(a.release_date || '9999-12-31') - new Date(b.release_date || '9999-12-31');
-        }
-        return new Date(b.release_date || 0) - new Date(a.release_date || 0);
-      }
-      if (sortBy === 'title') {
-        return (a.title || '').localeCompare(b.title || '');
-      }
-      return (b.popularity || 0) - (a.popularity || 0);
-    });
+  const filteredMovies = movies.filter((m) => {
+    // In Upcoming category, guarantee only unreleased future movies (release date >= today)
+    if (activeCategory === 'upcoming' && m.release_date && m.release_date < today) {
+      return false;
+    }
+    if (selectedGenre === 'all') return true;
+    return m.genre_ids && m.genre_ids.includes(Number(selectedGenre));
+  });
 
   // Complete the row grid: show only complete rows of 6 cards while infinite scrolling is active
   // (once user reaches the end of the catalogue, all remaining movies are displayed)
@@ -398,7 +397,7 @@ const DiscoveryPage = () => {
             className="form-control"
             style={{ width: 'auto', padding: '6px 12px', fontSize: '0.9rem' }}
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => handleSortChange(e.target.value)}
           >
             <option value="popularity">Sort by: Popularity</option>
             <option value="rating">Sort by: Rating (High to Low)</option>
