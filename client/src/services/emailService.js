@@ -30,7 +30,7 @@ export const sendVerificationOTP = async (toEmail, toName, otpCode) => {
       to_email: toEmail,
       to_name: toName || 'Movie Fan',
       otp_code: otpCode,
-      expiry_minutes: '10',
+      expiry_minutes: '5',
     };
 
     const res = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);

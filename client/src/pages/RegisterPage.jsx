@@ -86,10 +86,10 @@ const RegisterPage = () => {
         return;
       }
 
-      // 2. Generate new 6-digit OTP valid for 10 minutes
+      // 2. Generate new 6-digit OTP valid for 5 minutes
       const newOtp = generateNewOtp();
       setGeneratedOtp(newOtp);
-      setOtpExpiry(Date.now() + 10 * 60 * 1000); // 10 minutes
+      setOtpExpiry(Date.now() + 5 * 60 * 1000); // 5 minutes
 
       // 3. Dispatch email via EmailJS
       const emailResult = await sendVerificationOTP(email, name, newOtp);
@@ -120,7 +120,7 @@ const RegisterPage = () => {
     try {
       const newOtp = generateNewOtp();
       setGeneratedOtp(newOtp);
-      setOtpExpiry(Date.now() + 10 * 60 * 1000);
+      setOtpExpiry(Date.now() + 5 * 60 * 1000);
 
       const emailResult = await sendVerificationOTP(email, name, newOtp);
 
@@ -389,7 +389,7 @@ const RegisterPage = () => {
                   required
                 />
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: '8px', display: 'block' }}>
-                  The code expires in 10 minutes.
+                  The code expires in 5 minutes.
                 </span>
               </div>
 
