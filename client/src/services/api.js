@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create pre-configured Axios instance
 // In local dev, it targets http://localhost:5000/api
-// In production on Vercel, it uses relative /api
+// In production on Vercel, it targets the deployed backend /api
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: {
@@ -15,7 +15,11 @@ API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('cineverse_token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers = config.headers || {};
+      config.headers['Authorization'] = `Bearer ${token}`;
+      if (typeof config.headers.set === 'function') {
+        config.headers.set('Authorization', `Bearer ${token}`);
+      }
     }
     return config;
   },
@@ -27,8 +31,9 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token if unauthorized to prevent persistent invalid state
-      const isAuthRoute = error.config.url.includes('/auth/login') || error.config.url.includes('/auth/register');
+      const isAuthRoute =
+        error.config?.url?.includes('/auth/login') ||
+        error.config?.url?.includes('/auth/register');
       if (!isAuthRoute) {
         localStorage.removeItem('cineverse_token');
         localStorage.removeItem('cineverse_user');

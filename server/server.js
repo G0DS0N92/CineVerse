@@ -8,20 +8,33 @@ const authRoutes = require('./routes/authRoutes');
 const movieRoutes = require('./routes/movieRoutes');
 const watchlistRoutes = require('./routes/watchlistRoutes');
 
-// Initialize MongoDB Atlas connection
-connectDB();
-
 const app = express();
 
-// Middlewares
+// CORS configuration supporting credentials and dynamic origins across Vercel deployments
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || '*',
+    origin: true, // Dynamically reflects origin so cookies/headers work without wildcard conflict
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   })
 );
+
+// Respond to preflight requests immediately
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Ensure MongoDB Atlas connection is active for each incoming request
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Database connection error in middleware:', err.message);
+  }
+  next();
+});
 
 // Health Check Route
 app.get('/api/health', (req, res) => {

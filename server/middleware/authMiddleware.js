@@ -2,15 +2,19 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const protect = async (req, res, next) => {
+  // Allow CORS preflight requests to pass through without checking for a token
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+
+  if (authHeader && authHeader.startsWith('Bearer')) {
     try {
       // Extract token from 'Bearer <token>'
-      token = req.headers.authorization.split(' ')[1];
+      token = authHeader.split(' ')[1];
 
       // Verify token signature with JWT_SECRET
       const decoded = jwt.verify(
@@ -28,7 +32,7 @@ const protect = async (req, res, next) => {
         });
       }
 
-      next();
+      return next();
     } catch (error) {
       console.error('JWT verification error:', error.message);
       return res.status(401).json({
