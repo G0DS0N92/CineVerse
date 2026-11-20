@@ -1,6 +1,6 @@
 # 🎬 CineVerse – Smart Movie Watchlist & Reminder Platform
 
-CineVerse is a modern, full-stack movie discovery and personal watchlist platform built using the MERN stack (MongoDB, Express.js, React.js, Node.js). It integrates real-time movie catalogues via The Movie Database (TMDB) API, provides personal watchlist organization with custom watching states, and features a smart movie reminder system.
+CineVerse is an all-in-one personal movie companion designed to streamline how film lovers discover, organize, and plan their entertainment. The platform lets users explore real-time trending titles, build curated personal watchlists categorized by custom viewing statuses, and schedule smart watch reminders with personalized notes so they never miss a movie night. With an intuitive cinema dashboard, CineVerse transforms scattered movie recommendations into a beautifully organized viewing experience.
 
 ---
 
