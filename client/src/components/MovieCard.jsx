@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+
+const STATUS_OPTIONS = [
+  { value: 'Planned to Watch', label: 'Planned to Watch', color: '#38bdf8' },
+  { value: 'Currently Watching', label: 'Currently Watching', color: '#eab308' },
+  { value: 'Watched', label: 'Watched', color: '#10b981' },
+];
 
 const MovieCard = ({
   movie,
@@ -23,6 +29,22 @@ const MovieCard = ({
   const year = releaseDate ? releaseDate.split('-')[0] : 'N/A';
 
   const posterUrl = poster ? `${TMDB_IMG_BASE}${poster}` : null;
+
+  // Custom status dropdown state
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
 
   // Determine if the movie should show a Release Date badge (unreleased or newly releasing)
   const isUnreleased = (() => {
@@ -61,7 +83,10 @@ const MovieCard = ({
   })();
 
   return (
-    <div className="movie-card">
+    <div
+      className="movie-card"
+      style={{ zIndex: dropdownOpen ? 40 : undefined }}
+    >
       {/* Poster Image - Clickable to Movie Details */}
       <Link
         to={id ? `/movies/${id}` : '#'}
@@ -137,17 +162,108 @@ const MovieCard = ({
         {/* Watchlist Controls (If on Watchlist Page) */}
         {isWatchlistItem ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' }}>
-            {/* Status Change Selector */}
-            <select
-              className="form-control"
-              style={{ padding: '6px 10px', fontSize: '0.85rem' }}
-              value={movie.status}
-              onChange={(e) => onStatusChange && onStatusChange(movie._id, e.target.value)}
-            >
-              <option value="Planned to Watch">Planned to Watch</option>
-              <option value="Currently Watching">Currently Watching</option>
-              <option value="Watched">Watched</option>
-            </select>
+            {/* Custom Modern Cinema Status Selector */}
+            <div className="custom-status-dropdown-wrap" ref={dropdownRef}>
+              <button
+                type="button"
+                className={`custom-status-trigger ${dropdownOpen ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen((prev) => !prev);
+                }}
+                title="Change Watching Status"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                  <span
+                    className="custom-status-dot"
+                    style={{
+                      backgroundColor:
+                        movie.status === 'Watched'
+                          ? '#10b981'
+                          : movie.status === 'Currently Watching'
+                          ? '#eab308'
+                          : '#38bdf8',
+                      boxShadow:
+                        movie.status === 'Watched'
+                          ? '0 0 8px rgba(16, 185, 129, 0.7)'
+                          : movie.status === 'Currently Watching'
+                          ? '0 0 8px rgba(234, 179, 8, 0.7)'
+                          : '0 0 8px rgba(56, 189, 248, 0.7)',
+                    }}
+                  />
+                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {movie.status || 'Planned to Watch'}
+                  </span>
+                </div>
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                    opacity: 0.8,
+                    flexShrink: 0,
+                    marginLeft: '6px',
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {/* Floating Glassmorphic Menu */}
+              {dropdownOpen && (
+                <div className="custom-status-menu">
+                  {STATUS_OPTIONS.map((opt) => {
+                    const isSelected = movie.status === opt.value;
+                    return (
+                      <div
+                        key={opt.value}
+                        className={`custom-status-option ${isSelected ? 'selected' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onStatusChange) {
+                            onStatusChange(movie._id, opt.value);
+                          }
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span
+                            className="custom-status-dot"
+                            style={{
+                              backgroundColor: opt.color,
+                              boxShadow: `0 0 6px ${opt.color}88`,
+                            }}
+                          />
+                          <span>{opt.label}</span>
+                        </div>
+
+                        {isSelected && (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--accent-primary)"
+                            strokeWidth="2.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             <div style={{ display: 'flex', gap: '6px' }}>
               <button
