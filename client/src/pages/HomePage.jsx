@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import MovieCard from '../components/MovieCard';
 import Toast from '../components/Toast';
+import ReminderModal from '../components/ReminderModal';
 import { useAuth } from '../context/AuthContext';
 
 const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
@@ -13,37 +14,49 @@ const DEFAULT_UPCOMING_SLIDES = [
     id: 1003596,
     title: 'Avengers: Doomsday',
     backdrop_path: '/rObL4of4eFA8yWaN9pRFo9aOVNi.jpg',
+    poster_path: '/rObL4of4eFA8yWaN9pRFo9aOVNi.jpg',
     release_date: '17/12/2026',
     tagline: 'A Multiverse on a collision course.',
     overview:
       "Beloved heroes from three distinct universes are set on a deadly collision course against Doctor Doom and face an existential threat unlike anything they've ever encountered.",
+    vote_average: 8.8,
+    genres: ['Action', 'Adventure', 'Sci-Fi'],
   },
   {
     id: 1170608,
     title: 'Dune: Part Three',
     backdrop_path: '/i5E9H7Ik0u61ylDDTbmUpTL3Yw.jpg',
+    poster_path: '/i5E9H7Ik0u61ylDDTbmUpTL3Yw.jpg',
     release_date: '15/12/2026',
     tagline: 'The Holy War unfolds across the stars.',
     overview:
       'Paul Atreides faces the galactic fallout of the Holy War as he grapples with the terrifying destiny of his prescience and the fate of the known universe.',
+    vote_average: 8.7,
+    genres: ['Sci-Fi', 'Adventure', 'Drama'],
   },
   {
     id: 1003598,
     title: 'Avengers: Secret Wars',
     backdrop_path: '/rytc6Lf4447C0CDncwFa4gxe0vY.jpg',
+    poster_path: '/rytc6Lf4447C0CDncwFa4gxe0vY.jpg',
     release_date: '17/12/2027',
     tagline: 'The collapse of reality.',
     overview:
       'The ultimate culmination of the Multiverse Saga where realities clash and heroes from across all time fight for the survival of the cosmos.',
+    vote_average: 8.9,
+    genres: ['Action', 'Sci-Fi'],
   },
   {
     id: 1260649,
     title: 'Jumanji: Open World',
     backdrop_path: '/vaYfhMuwFwsMqyMnu9amtS9hUHE.jpg',
+    poster_path: '/vaYfhMuwFwsMqyMnu9amtS9hUHE.jpg',
     release_date: '23/12/2026',
     tagline: 'The game enters reality.',
     overview:
       "The perils of Jumanji escape the jungle into the modern world, forcing unexpected heroes to team up and survive the game's deadliest levels.",
+    vote_average: 7.9,
+    genres: ['Adventure', 'Comedy', 'Fantasy'],
   },
 ];
 
@@ -58,6 +71,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [watchlistIds, setWatchlistIds] = useState(new Set());
+  const [selectedMovieForReminder, setSelectedMovieForReminder] = useState(null);
 
   // Helper: Format release date strictly to DD/MM/YYYY
   const formatToDDMMYYYY = (dateStr) => {
@@ -70,6 +84,20 @@ const HomePage = () => {
       return `${day}/${month}/${year}`;
     }
     return dateStr;
+  };
+
+  // Helper: Stylize movie titles with highlighted subtitles
+  const renderMovieTitle = (title) => {
+    if (!title) return 'Featured Movie';
+    if (title.includes(':')) {
+      const [main, ...sub] = title.split(':');
+      return (
+        <>
+          {main}: <span className="hero-title-highlight">{sub.join(':').trim()}</span>
+        </>
+      );
+    }
+    return title;
   };
 
   // Fetch Trending and Live Upcoming Movies
@@ -177,12 +205,16 @@ const HomePage = () => {
       const payload = {
         tmdbId: movie.id,
         title: movie.title,
-        posterPath: movie.poster_path,
-        backdropPath: movie.backdrop_path,
-        overview: movie.overview,
-        releaseDate: movie.release_date,
-        voteAverage: movie.vote_average,
-        genres: movie.genre_ids ? movie.genre_ids.map(String) : [],
+        posterPath: movie.poster_path || movie.backdrop_path || '',
+        backdropPath: movie.backdrop_path || '',
+        overview: movie.overview || '',
+        releaseDate: movie.release_date || '',
+        voteAverage: movie.vote_average || 0,
+        genres: movie.genre_ids
+          ? movie.genre_ids.map(String)
+          : Array.isArray(movie.genres)
+          ? movie.genres
+          : [],
         status: 'Planned to Watch',
       };
 
@@ -226,6 +258,58 @@ const HomePage = () => {
     }
   };
 
+  // Open Reminder modal for movie
+  const handleOpenReminder = (movie) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    setSelectedMovieForReminder(movie);
+  };
+
+  // Save Reminder for movie
+  const handleSaveReminder = async (reminderData) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const payload = {
+        tmdbId: selectedMovieForReminder.id,
+        title: selectedMovieForReminder.title,
+        posterPath:
+          selectedMovieForReminder.poster_path || selectedMovieForReminder.backdrop_path || '',
+        backdropPath: selectedMovieForReminder.backdrop_path || '',
+        overview: selectedMovieForReminder.overview || '',
+        releaseDate: selectedMovieForReminder.release_date || '',
+        voteAverage: selectedMovieForReminder.vote_average || 0,
+        genres: selectedMovieForReminder.genre_ids
+          ? selectedMovieForReminder.genre_ids.map(String)
+          : Array.isArray(selectedMovieForReminder.genres)
+          ? selectedMovieForReminder.genres
+          : [],
+        status: 'Planned to Watch',
+        ...reminderData,
+      };
+
+      await API.post('/watchlist', payload);
+      setWatchlistIds((prev) => new Set(prev).add(selectedMovieForReminder.id));
+      setSelectedMovieForReminder(null);
+      window.dispatchEvent(new CustomEvent('cineverse_reminder_updated'));
+      setToast({
+        message: `Reminder scheduled for "${selectedMovieForReminder.title}"!`,
+        type: 'success',
+      });
+    } catch (err) {
+      setSelectedMovieForReminder(null);
+      setToast({
+        message: err.response?.data?.message || 'Failed to schedule reminder',
+        type: 'error',
+      });
+    }
+  };
+
   const activeSlide = upcomingSlides[currentSlide] || upcomingSlides[0];
 
   return (
@@ -249,62 +333,140 @@ const HomePage = () => {
           <div className="hero-backdrop-overlay" />
         </div>
 
-        {/* Content on the Left */}
+        {/* Content on the Left (Directly Featuring the Active Movie) */}
         <div className="hero-content-left">
-          {/* Pill Badge */}
+          {/* Movie Category & Premiere Badge */}
           <div className="hero-pill-badge">
             <svg
-              width="14"
-              height="14"
+              width="13"
+              height="13"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2.5"
             >
-              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-              <line x1="7" y1="2" x2="7" y2="22" />
-              <line x1="17" y1="2" x2="17" y2="22" />
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-            <span>Your Personal Movie Companion</span>
+            <span>Upcoming Premiere • {activeSlide.release_date}</span>
           </div>
 
-          {/* Main Cinematic Title */}
-          <h1 className="hero-main-title">
-            Discover. Watchlist.{' '}
-            <span className="hero-title-highlight">Remind.</span>
+          {/* Real Movie Title */}
+          <h1 className="hero-main-title" title={activeSlide.title}>
+            {renderMovieTitle(activeSlide.title)}
           </h1>
 
-          {/* Upcoming Featured Movie Pill */}
+          {/* Movie Tagline / Meta Details */}
           <div className="hero-slide-preview-badge">
-            <span>Upcoming Premiere:</span>
-            <strong style={{ color: '#ffffff' }}>{activeSlide.title}</strong>
-            <span style={{ opacity: 0.7 }}>• {activeSlide.release_date}</span>
+            {activeSlide.tagline ? (
+              <span style={{ fontStyle: 'italic', color: '#e2e8f0' }}>"{activeSlide.tagline}"</span>
+            ) : (
+              <>
+                <span>In Theaters:</span>
+                <strong style={{ color: '#ffffff' }}>{activeSlide.release_date}</strong>
+                {activeSlide.vote_average > 0 && (
+                  <span style={{ color: 'var(--accent-gold)' }}>
+                    ★ {Number(activeSlide.vote_average).toFixed(1)}
+                  </span>
+                )}
+              </>
+            )}
           </div>
 
-          {/* Subtitle Description */}
-          <p className="hero-description">
-            CineVerse is an all-in-one movie platform to discover real-time trending titles, curate
-            personalized watchlists, and schedule smart reminders so you never miss a movie night.
+          {/* Real Movie Synopsis Description (TMDB / IMDB) */}
+          <p className="hero-description" title={activeSlide.overview}>
+            {activeSlide.overview || 'Synopsis coming soon for this upcoming cinematic release.'}
           </p>
 
-          {/* Action Buttons */}
+          {/* Movie-Specific Action Options */}
           <div className="hero-actions-row">
-            <Link to="/discover" className="hero-btn-primary">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3" />
+            <Link to={`/movies/${activeSlide.id}`} className="hero-btn-primary">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
-              <span>Explore Movies</span>
+              <span>View Details</span>
             </Link>
 
-            {isAuthenticated ? (
-              <Link to="/watchlist" className="hero-btn-secondary">
-                <span>+ My Watchlist</span>
-              </Link>
+            {watchlistIds.has(activeSlide.id) ? (
+              <button
+                type="button"
+                className="hero-btn-secondary"
+                style={{
+                  background: '#dc2626',
+                  borderColor: '#b91c1c',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                }}
+                onClick={() => handleRemoveFromWatchlist(activeSlide)}
+                title="Remove this movie from your watchlist"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+                <span>Remove</span>
+              </button>
             ) : (
-              <Link to="/register" className="hero-btn-secondary">
-                <span>+ My Watchlist</span>
-              </Link>
+              <button
+                type="button"
+                className="hero-btn-secondary"
+                onClick={() => handleAddToWatchlist(activeSlide)}
+                title="Add this movie to your watchlist"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>+ Watchlist</span>
+              </button>
             )}
+
+            <button
+              type="button"
+              className="hero-btn-secondary"
+              onClick={() => handleOpenReminder(activeSlide)}
+              title="Set a watch reminder for this movie"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+              >
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              <span>Remind Me</span>
+            </button>
           </div>
         </div>
 
@@ -440,6 +602,14 @@ const HomePage = () => {
           </div>
         )}
       </section>
+
+      {/* Reminder Schedule Modal for Hero & Trending Movies */}
+      <ReminderModal
+        isOpen={!!selectedMovieForReminder}
+        onClose={() => setSelectedMovieForReminder(null)}
+        movie={selectedMovieForReminder}
+        onSave={handleSaveReminder}
+      />
 
       {/* Center-Bottom Floating Toast Notification */}
       <Toast toast={toast} onClose={() => setToast(null)} />
