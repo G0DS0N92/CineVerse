@@ -255,12 +255,13 @@ a {
 .movie-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
-  overflow: visible;
+  overflow: hidden;
   border: 1px solid var(--border-color);
   transition: all var(--transition-normal);
   display: flex;
   flex-direction: column;
   position: relative;
+  min-width: 0;
 }
 
 .movie-card:hover {
@@ -339,6 +340,8 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 4px;
+  display: block;
+  max-width: 100%;
 }
 
 .movie-card-meta {
@@ -1455,21 +1458,21 @@ select.form-control option {
 /* Synchronized 6-Column Grid for Homepage Trending Movies */
 .home-movies-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
 }
 
 @media (max-width: 1200px) {
   .home-movies-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
   }
 }
 
 @media (max-width: 640px) {
   .home-movies-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
 }

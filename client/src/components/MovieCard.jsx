@@ -85,12 +85,15 @@ const MovieCard = ({
   return (
     <div
       className="movie-card"
-      style={{ zIndex: dropdownOpen ? 40 : undefined }}
+      style={{
+        zIndex: dropdownOpen ? 40 : undefined,
+        overflow: dropdownOpen ? 'visible' : 'hidden',
+      }}
     >
       {/* Poster Image - Clickable to Movie Details */}
       <Link
         to={id ? `/movies/${id}` : '#'}
-        style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+        style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer', flexShrink: 0 }}
         title={`View details for ${title}`}
       >
         <div className="movie-poster-wrap">
@@ -131,10 +134,16 @@ const MovieCard = ({
       </Link>
 
       {/* Info Body */}
-      <div className="movie-card-info">
+      <div className="movie-card-info" style={{ minWidth: 0, overflow: 'hidden' }}>
         <Link
           to={id ? `/movies/${id}` : '#'}
-          style={{ textDecoration: 'none', color: 'inherit' }}
+          style={{
+            display: 'block',
+            textDecoration: 'none',
+            color: 'inherit',
+            minWidth: 0,
+            overflow: 'hidden',
+          }}
           title={`View details for ${title}`}
         >
           <h3 className="movie-card-title" title={title} style={{ cursor: 'pointer' }}>
