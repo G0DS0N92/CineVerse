@@ -151,7 +151,7 @@ const HomePage = () => {
     }, 5500);
 
     return () => clearInterval(interval);
-  }, [isPaused, upcomingSlides.length]);
+  }, [isPaused, upcomingSlides.length, currentSlide]);
 
   const handlePrevSlide = () => {
     setCurrentSlide((prev) => (prev === 0 ? upcomingSlides.length - 1 : prev - 1));
@@ -285,7 +285,7 @@ const HomePage = () => {
           {/* Action Buttons */}
           <div className="hero-actions-row">
             <Link to="/discover" className="hero-btn-primary">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
               <span>Explore Movies</span>
@@ -300,48 +300,6 @@ const HomePage = () => {
                 <span>+ My Watchlist</span>
               </Link>
             )}
-          </div>
-
-          {/* Mini Feature Badges Row */}
-          <div className="hero-pillars-row">
-            <div className="hero-pillar-item">
-              <div className="hero-pillar-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <rect x="2" y="2" width="20" height="20" rx="2" />
-                  <line x1="7" y1="2" x2="7" y2="22" />
-                  <line x1="17" y1="2" x2="17" y2="22" />
-                </svg>
-              </div>
-              <div className="hero-pillar-text">
-                <strong>Real-Time Movies</strong>
-                <span>Powered by TMDB</span>
-              </div>
-            </div>
-
-            <div className="hero-pillar-item">
-              <div className="hero-pillar-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                </svg>
-              </div>
-              <div className="hero-pillar-text">
-                <strong>Personal Watchlists</strong>
-                <span>Plan • Track • Watch</span>
-              </div>
-            </div>
-
-            <div className="hero-pillar-item">
-              <div className="hero-pillar-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </div>
-              <div className="hero-pillar-text">
-                <strong>Smart Reminders</strong>
-                <span>Never miss a release</span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -375,52 +333,57 @@ const HomePage = () => {
             />
           ))}
         </div>
+
+        {/* Animated Loading Progress Slidebar at Bottom of Banner */}
+        <div className="hero-progress-bar-track" aria-hidden="true">
+          <div
+            key={currentSlide}
+            className={`hero-progress-bar-fill ${isPaused ? 'paused' : 'running'}`}
+          />
+        </div>
       </section>
 
       {/* ========================================================
-          FOUR MODERN FEATURE CARDS (MATCHING REFERENCE MOCKUP)
+          FOUR HORIZONTAL FEATURE TAGS (ALL IN ONE LINE)
           ======================================================== */}
       <section className="feature-cards-grid-modern">
         <Link to="/discover" className="feature-card-modern">
           <div className="feature-card-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
           </div>
           <div className="feature-card-text">
             <h3>Discover Movies</h3>
-            <p>Explore trending, popular, and upcoming titles in real-time.</p>
           </div>
         </Link>
 
         <Link to="/watchlist" className="feature-card-modern">
           <div className="feature-card-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
           </div>
           <div className="feature-card-text">
             <h3>Curate Watchlists</h3>
-            <p>Organize movies by Planned, Currently Watching, or Watched.</p>
           </div>
         </Link>
 
         <Link to="/reminders" className="feature-card-modern">
           <div className="feature-card-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
           </div>
           <div className="feature-card-text">
             <h3>Smart Reminders</h3>
-            <p>Set custom date & time reminders for your movie plans.</p>
           </div>
         </Link>
 
         <Link to="/dashboard" className="feature-card-modern">
           <div className="feature-card-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="20" x2="18" y2="10" />
               <line x1="12" y1="20" x2="12" y2="4" />
               <line x1="6" y1="20" x2="6" y2="14" />
@@ -428,7 +391,6 @@ const HomePage = () => {
           </div>
           <div className="feature-card-text">
             <h3>Your Movie Stats</h3>
-            <p>Track your watching journey with personal insights and progress.</p>
           </div>
         </Link>
       </section>
