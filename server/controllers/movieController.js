@@ -13,6 +13,19 @@ const getTrending = async (req, res, next) => {
   }
 };
 
+// @desc    Get now playing movies (in theatres)
+// @route   GET /api/movies/now-playing
+// @access  Public
+const getNowPlaying = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const movies = await tmdbService.getNowPlaying(page);
+    res.status(200).json({ success: true, count: movies.length, data: movies });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get popular movies
 // @route   GET /api/movies/popular
 // @access  Public
@@ -95,6 +108,7 @@ const getGenres = async (req, res, next) => {
 
 module.exports = {
   getTrending,
+  getNowPlaying,
   getPopular,
   getUpcoming,
   getTopRated,

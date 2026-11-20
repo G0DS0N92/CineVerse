@@ -5,10 +5,30 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const CATEGORIES = [
-  { id: 'trending', label: '🔥 Trending' },
-  { id: 'popular', label: '⭐ Popular' },
-  { id: 'upcoming', label: '🚀 Upcoming' },
-  { id: 'top-rated', label: '🏆 Top Rated' },
+  {
+    id: 'trending',
+    label: '🔥 Trending',
+    defaultSort: 'popularity',
+    subtitle: 'Viral buzz & most searched movies this week',
+  },
+  {
+    id: 'now-playing',
+    label: '🎬 Now Playing',
+    defaultSort: 'popularity',
+    subtitle: 'Movies currently playing in theatres and newly released',
+  },
+  {
+    id: 'upcoming',
+    label: '🚀 Upcoming',
+    defaultSort: 'releaseDate',
+    subtitle: 'Unreleased movies coming to theatres in the future',
+  },
+  {
+    id: 'top-rated',
+    label: '🏆 Top Rated',
+    defaultSort: 'rating',
+    subtitle: 'All-time cinematic masterpieces with highest ratings',
+  },
 ];
 
 const GENRES = [
@@ -92,16 +112,40 @@ const DiscoveryPage = () => {
     }
   };
 
+  const handleCategoryClick = (cat) => {
+    setActiveCategory(cat.id);
+    setSearchQuery('');
+    setSortBy(cat.defaultSort);
+  };
+
   // Filter & Sort movies on client side
+  const today = new Date().toISOString().split('T')[0];
+
   const filteredMovies = movies
     .filter((m) => {
+      // In Upcoming category, guarantee only unreleased future movies (release date >= today)
+      if (activeCategory === 'upcoming' && m.release_date && m.release_date < today) {
+        return false;
+      }
       if (selectedGenre === 'all') return true;
       return m.genre_ids && m.genre_ids.includes(Number(selectedGenre));
     })
     .sort((a, b) => {
-      if (sortBy === 'rating') return (b.vote_average || 0) - (a.vote_average || 0);
-      if (sortBy === 'releaseDate') return new Date(b.release_date || 0) - new Date(a.release_date || 0);
-      if (sortBy === 'title') return a.title.localeCompare(b.title);
+      if (sortBy === 'rating') {
+        const diff = (b.vote_average || 0) - (a.vote_average || 0);
+        if (Math.abs(diff) > 0.01) return diff;
+        return (b.vote_count || 0) - (a.vote_count || 0);
+      }
+      if (sortBy === 'releaseDate') {
+        // Upcoming: nearest future release first (soonest upcoming at the top)
+        if (activeCategory === 'upcoming') {
+          return new Date(a.release_date || '9999-12-31') - new Date(b.release_date || '9999-12-31');
+        }
+        return new Date(b.release_date || 0) - new Date(a.release_date || 0);
+      }
+      if (sortBy === 'title') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
       return (b.popularity || 0) - (a.popularity || 0);
     });
 
@@ -147,19 +191,23 @@ const DiscoveryPage = () => {
         }}
       >
         {/* Category Buttons */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              className={`btn btn-sm ${activeCategory === cat.id && !searchQuery ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => {
-                setActiveCategory(cat.id);
-                setSearchQuery('');
-              }}
-            >
-              {cat.label}
-            </button>
-          ))}
+        <div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                className={`btn btn-sm ${activeCategory === cat.id && !searchQuery ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => handleCategoryClick(cat)}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          {!searchQuery && (
+            <p style={{ color: 'var(--text-dim)', fontSize: '0.82rem', marginTop: '6px', marginLeft: '2px' }}>
+              ℹ️ {CATEGORIES.find((c) => c.id === activeCategory)?.subtitle}
+            </p>
+          )}
         </div>
 
         {/* Genre & Sort Controls */}

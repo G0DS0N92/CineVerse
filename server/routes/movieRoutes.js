@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getTrending,
+  getNowPlaying,
   getPopular,
   getUpcoming,
   getTopRated,
@@ -11,6 +12,7 @@ const {
 } = require('../controllers/movieController');
 
 router.get('/trending', getTrending);
+router.get('/now-playing', getNowPlaying);
 router.get('/popular', getPopular);
 router.get('/upcoming', getUpcoming);
 router.get('/top-rated', getTopRated);

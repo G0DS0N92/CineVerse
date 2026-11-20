@@ -118,8 +118,13 @@ const fetchFromTMDB = async (endpoint, params = {}) => {
 };
 
 // Service Methods
-const getTrending = async (timeWindow = 'day') => {
+const getTrending = async (timeWindow = 'week') => {
   const data = await fetchFromTMDB(`/trending/movie/${timeWindow}`);
+  return data ? data.results : FALLBACK_MOVIES;
+};
+
+const getNowPlaying = async (page = 1) => {
+  const data = await fetchFromTMDB('/movie/now_playing', { page });
   return data ? data.results : FALLBACK_MOVIES;
 };
 
@@ -129,13 +134,32 @@ const getPopular = async (page = 1) => {
 };
 
 const getUpcoming = async (page = 1) => {
-  const data = await fetchFromTMDB('/movie/upcoming', { page });
-  return data ? data.results : FALLBACK_MOVIES.slice(0, 3);
+  const today = new Date().toISOString().split('T')[0];
+  // Strictly discover unreleased movies with release date >= today
+  const data = await fetchFromTMDB('/discover/movie', {
+    'primary_release_date.gte': today,
+    sort_by: 'popularity.desc',
+    include_adult: false,
+    include_video: false,
+    page,
+  });
+
+  const results = data ? data.results : FALLBACK_MOVIES.slice(0, 3);
+  // Guarantee only true future movies and sort chronologically (soonest upcoming first)
+  return results
+    .filter((m) => m.release_date && m.release_date >= today)
+    .sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
 };
 
 const getTopRated = async (page = 1) => {
   const data = await fetchFromTMDB('/movie/top_rated', { page });
-  return data ? data.results : FALLBACK_MOVIES;
+  const results = data ? data.results : FALLBACK_MOVIES;
+  // Strictly sort descending by vote_average (highest rated first, e.g. 9.0+ at the top)
+  return results.sort((a, b) => {
+    const diff = (b.vote_average || 0) - (a.vote_average || 0);
+    if (Math.abs(diff) > 0.01) return diff;
+    return (b.vote_count || 0) - (a.vote_count || 0);
+  });
 };
 
 const searchMovies = async (query, page = 1) => {
@@ -184,6 +208,7 @@ const getGenres = async () => {
 
 module.exports = {
   getTrending,
+  getNowPlaying,
   getPopular,
   getUpcoming,
   getTopRated,
