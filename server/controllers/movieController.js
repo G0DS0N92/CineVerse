@@ -5,9 +5,10 @@ const tmdbService = require('../services/tmdbService');
 // @access  Public
 const getTrending = async (req, res, next) => {
   try {
-    const timeWindow = req.query.timeWindow || 'day';
-    const movies = await tmdbService.getTrending(timeWindow);
-    res.status(200).json({ success: true, count: movies.length, data: movies });
+    const timeWindow = req.query.timeWindow || 'week';
+    const page = parseInt(req.query.page, 10) || 1;
+    const movies = await tmdbService.getTrending(timeWindow, page);
+    res.status(200).json({ success: true, count: movies.length, data: movies, page });
   } catch (error) {
     next(error);
   }

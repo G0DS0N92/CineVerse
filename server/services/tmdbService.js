@@ -118,8 +118,8 @@ const fetchFromTMDB = async (endpoint, params = {}) => {
 };
 
 // Service Methods
-const getTrending = async (timeWindow = 'week') => {
-  const data = await fetchFromTMDB(`/trending/movie/${timeWindow}`);
+const getTrending = async (timeWindow = 'week', page = 1) => {
+  const data = await fetchFromTMDB(`/trending/movie/${timeWindow}`, { page });
   return data ? data.results : FALLBACK_MOVIES;
 };
 

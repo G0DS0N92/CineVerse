@@ -60,11 +60,16 @@ const DiscoveryPage = () => {
       setSearchQuery(q);
     }
   }, [location.search]);
+
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState('popularity');
   const [toast, setToast] = useState(null);
   const [watchlistIds, setWatchlistIds] = useState(new Set());
+  const observerTarget = React.useRef(null);
 
   // Load user's saved watchlist IDs to show live toggle state (+ Watchlist vs Remove)
   useEffect(() => {
@@ -86,34 +91,116 @@ const DiscoveryPage = () => {
     fetchUserWatchlist();
   }, [isAuthenticated]);
 
-  // Fetch movies based on Category or Search
+  // Initial fetch: loads Page 1 and Page 2 for a full rich grid
   useEffect(() => {
-    const fetchMovies = async () => {
+    let isCancelled = false;
+
+    const fetchInitialMovies = async () => {
       setLoading(true);
+      setPage(1);
+      setHasMore(true);
+
       try {
-        let endpoint = `/movies/${activeCategory}`;
-        if (searchQuery.trim().length > 1) {
-          endpoint = `/movies/search?query=${encodeURIComponent(searchQuery.trim())}`;
+        const ep1 =
+          searchQuery.trim().length > 1
+            ? `/movies/search?query=${encodeURIComponent(searchQuery.trim())}&page=1`
+            : `/movies/${activeCategory}?page=1`;
+        const ep2 =
+          searchQuery.trim().length > 1
+            ? `/movies/search?query=${encodeURIComponent(searchQuery.trim())}&page=2`
+            : `/movies/${activeCategory}?page=2`;
+
+        const [res1, res2] = await Promise.allSettled([API.get(ep1), API.get(ep2)]);
+        if (isCancelled) return;
+
+        let combined = [];
+        if (res1.status === 'fulfilled' && res1.value.data.success) {
+          combined = [...res1.value.data.data];
+        }
+        if (res2.status === 'fulfilled' && res2.value.data.success) {
+          combined = [...combined, ...res2.value.data.data];
+          setPage(2);
+        } else {
+          setPage(1);
         }
 
-        const { data } = await API.get(endpoint);
-        if (data.success) {
-          setMovies(data.data);
+        // Deduplicate movies by ID
+        const seen = new Set();
+        const unique = combined.filter((m) => {
+          if (seen.has(m.id)) return false;
+          seen.add(m.id);
+          return true;
+        });
+
+        setMovies(unique);
+        if (unique.length === 0) {
+          setHasMore(false);
         }
       } catch (err) {
         console.error('Error fetching discovery movies', err);
       } finally {
-        setLoading(false);
+        if (!isCancelled) setLoading(false);
       }
     };
 
     // Debounce search by 300ms
     const timer = setTimeout(() => {
-      fetchMovies();
+      fetchInitialMovies();
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
   }, [activeCategory, searchQuery]);
+
+  // Load next page of movies when infinite scroll triggers
+  const loadMoreMovies = async () => {
+    if (loading || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+
+    try {
+      const endpoint =
+        searchQuery.trim().length > 1
+          ? `/movies/search?query=${encodeURIComponent(searchQuery.trim())}&page=${nextPage}`
+          : `/movies/${activeCategory}?page=${nextPage}`;
+
+      const { data } = await API.get(endpoint);
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setMovies((prev) => {
+          const seen = new Set(prev.map((m) => m.id));
+          const newUnique = data.data.filter((m) => !seen.has(m.id));
+          return [...prev, ...newUnique];
+        });
+        setPage(nextPage);
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error('Failed to load more discovery movies', err);
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // IntersectionObserver for seamless infinite scrolling
+  useEffect(() => {
+    if (!observerTarget.current || !hasMore || loading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore && hasMore) {
+          loadMoreMovies();
+        }
+      },
+      { rootMargin: '350px' }
+    );
+
+    observer.observe(observerTarget.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, page, activeCategory, searchQuery]);
 
   // Add Movie to Watchlist
   const handleAddToWatchlist = async (movie) => {
@@ -211,6 +298,17 @@ const DiscoveryPage = () => {
       }
       return (b.popularity || 0) - (a.popularity || 0);
     });
+
+  // Complete the row grid: show only complete rows of 6 cards while infinite scrolling is active
+  // (once user reaches the end of the catalogue, all remaining movies are displayed)
+  const completeGridMovies = (() => {
+    if (!hasMore || filteredMovies.length <= 6) return filteredMovies;
+    const remainder = filteredMovies.length % 6;
+    if (remainder !== 0) {
+      return filteredMovies.slice(0, filteredMovies.length - remainder);
+    }
+    return filteredMovies;
+  })();
 
   return (
     <div>
@@ -344,17 +442,35 @@ const DiscoveryPage = () => {
           <p>Try a different search keyword or category.</p>
         </div>
       ) : (
-        <div className="movies-grid">
-          {filteredMovies.map((movie) => (
-            <MovieCard
-              key={movie.id}
-              movie={movie}
-              isInWatchlist={watchlistIds.has(movie.id)}
-              onAddToWatchlist={handleAddToWatchlist}
-              onRemoveFromWatchlist={handleRemoveFromWatchlist}
-            />
-          ))}
-        </div>
+        <>
+          <div className="movies-grid">
+            {completeGridMovies.map((movie) => (
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                isInWatchlist={watchlistIds.has(movie.id)}
+                onAddToWatchlist={handleAddToWatchlist}
+                onRemoveFromWatchlist={handleRemoveFromWatchlist}
+              />
+            ))}
+          </div>
+
+          {/* Sentinel element observed by IntersectionObserver for infinite scrolling */}
+          <div ref={observerTarget} className="infinite-scroll-sentinel" />
+
+          {loadingMore && (
+            <div className="infinite-scroll-loading">
+              <div className="spinner-small" />
+              <span>Loading more movies...</span>
+            </div>
+          )}
+
+          {!hasMore && completeGridMovies.length > 0 && (
+            <div className="infinite-scroll-end">
+              <span>You have explored all movies in this category.</span>
+            </div>
+          )}
+        </>
       )}
 
       {/* Center-Bottom Floating Toast Notification */}

@@ -12,11 +12,11 @@ const DEFAULT_UPCOMING_SLIDES = [
   {
     id: 1003596,
     title: 'Avengers: Doomsday',
-    backdrop_path: '/9N21RJNwDuYJP5M0Of3mN4xG3IA.jpg',
+    backdrop_path: '/rObL4of4eFA8yWaN9pRFo9aOVNi.jpg',
     release_date: '17/12/2026',
     tagline: 'A Multiverse on a collision course.',
     overview:
-      "Beloved heroes from three distinct universes are set on a deadly collision course and face an existential threat unlike anything they've ever encountered.",
+      "Beloved heroes from three distinct universes are set on a deadly collision course against Doctor Doom and face an existential threat unlike anything they've ever encountered.",
   },
   {
     id: 1170608,
@@ -31,7 +31,7 @@ const DEFAULT_UPCOMING_SLIDES = [
     id: 1003598,
     title: 'Avengers: Secret Wars',
     backdrop_path: '/rytc6Lf4447C0CDncwFa4gxe0vY.jpg',
-    release_date: '15/12/2027',
+    release_date: '17/12/2027',
     tagline: 'The collapse of reality.',
     overview:
       'The ultimate culmination of the Multiverse Saga where realities clash and heroes from across all time fight for the survival of the cosmos.',
@@ -82,20 +82,23 @@ const HomePage = () => {
           setTrendingMovies(trendData.data.slice(0, 6)); // Top 6 trending
         }
 
-        // Fetch upcoming movies to enhance slides with live TMDB data
+        {/* Fetch upcoming movies to enhance slides with premier live TMDB data */}
         const { data: upData } = await API.get('/movies/upcoming');
         if (upData.success && Array.isArray(upData.data)) {
-          const liveWithBackdrops = upData.data.filter((m) => m.backdrop_path);
+          // Filter to high-popularity blockbuster upcoming titles with backdrops
+          const premierUpcoming = upData.data.filter(
+            (m) => m.backdrop_path && (m.popularity >= 25 || m.vote_count > 0)
+          );
 
-          // Find Doomsday or keep default Doomsday as #1
+          // Find Doomsday or keep curated Doomsday as #1
           const doomsday =
-            liveWithBackdrops.find((m) => m.id === 1003596 || m.title.includes('Doomsday')) ||
+            premierUpcoming.find((m) => m.id === 1003596 || m.title.includes('Doomsday')) ||
             DEFAULT_UPCOMING_SLIDES[0];
 
-          // Filter out doomsday from the others and take top 4
-          const others = liveWithBackdrops
-            .filter((m) => m.id !== doomsday.id)
-            .slice(0, 4)
+          // Filter out doomsday from the others and take top 3
+          const others = premierUpcoming
+            .filter((m) => m.id !== doomsday.id && m.id !== 1003596)
+            .slice(0, 3)
             .map((m) => ({
               ...m,
               release_date: formatToDDMMYYYY(m.release_date),
@@ -103,8 +106,10 @@ const HomePage = () => {
 
           const combined = [
             {
+              ...DEFAULT_UPCOMING_SLIDES[0],
               ...doomsday,
-              release_date: formatToDDMMYYYY(doomsday.release_date || '2026-12-17'),
+              backdrop_path: DEFAULT_UPCOMING_SLIDES[0].backdrop_path,
+              release_date: '17/12/2026',
             },
             ...others,
           ];
@@ -321,25 +326,27 @@ const HomePage = () => {
           &#8250;
         </button>
 
-        {/* Slide Indicator Dots */}
+        {/* Slide Indicator Dots with Animated Red Progress Fill in Active Pill */}
         <div className="hero-dots-row">
-          {upcomingSlides.map((s, idx) => (
-            <button
-              key={s.id || idx}
-              type="button"
-              className={`hero-dot ${idx === currentSlide ? 'active' : ''}`}
-              onClick={() => setCurrentSlide(idx)}
-              aria-label={`Jump to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Animated Loading Progress Slidebar at Bottom of Banner */}
-        <div className="hero-progress-bar-track" aria-hidden="true">
-          <div
-            key={currentSlide}
-            className={`hero-progress-bar-fill ${isPaused ? 'paused' : 'running'}`}
-          />
+          {upcomingSlides.map((s, idx) => {
+            const isActive = idx === currentSlide;
+            return (
+              <button
+                key={s.id || idx}
+                type="button"
+                className={`hero-dot ${isActive ? 'active' : ''}`}
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Jump to slide ${idx + 1}`}
+              >
+                {isActive && (
+                  <span
+                    key={`dot-fill-${currentSlide}`}
+                    className={`hero-dot-fill ${isPaused ? 'paused' : 'running'}`}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </section>
 
