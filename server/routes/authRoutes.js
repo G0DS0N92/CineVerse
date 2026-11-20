@@ -5,9 +5,11 @@ const {
   login,
   getMe,
   updateProfile,
+  checkEmail,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
+router.post('/check-email', checkEmail);
 router.post('/register', register);
 router.post('/login', login);
 router.get('/me', protect, getMe);

@@ -208,9 +208,42 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Check if email is already taken before sending OTP
+// @route   POST /api/auth/check-email
+// @access  Public
+const checkEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email address is required.',
+      });
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        exists: true,
+        message: 'An account with this email already exists.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      exists: false,
+      message: 'Email is available.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
   updateProfile,
+  checkEmail,
 };
