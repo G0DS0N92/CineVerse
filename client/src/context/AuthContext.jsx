@@ -88,6 +88,15 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  // Permanently delete user account and clear session
+  const deleteAccount = async () => {
+    const { data } = await API.delete('/auth/profile');
+    if (data.success) {
+      logout();
+    }
+    return data;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -99,6 +108,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateProfile,
+        deleteAccount,
       }}
     >
       {children}

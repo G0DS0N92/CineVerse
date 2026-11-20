@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Toast from '../components/Toast';
+import { sendAccountDeletionOTP } from '../services/emailService';
 
 const ProfilePage = () => {
-  const { user, updateProfile, logout } = useAuth();
+  const { user, updateProfile, logout, deleteAccount } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
@@ -14,7 +15,18 @@ const ProfilePage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Delete Account Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteStep, setDeleteStep] = useState('confirm'); // 'confirm' | 'otp'
+  const [generatedDeleteOtp, setGeneratedDeleteOtp] = useState('');
+  const [enteredDeleteOtp, setEnteredDeleteOtp] = useState('');
+  const [deleteOtpExpiry, setDeleteOtpExpiry] = useState(0);
+  const [deleteCooldown, setDeleteCooldown] = useState(0);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
   const fileInputRef = useRef(null);
+  const deleteOtpInputRef = useRef(null);
   const navigate = useNavigate();
 
   // Sync state if user loads after mount
@@ -27,6 +39,22 @@ const ProfilePage = () => {
       setAvatarPreview(user.avatar || '');
     }
   }, [user]);
+
+  // Resend cooldown timer for deletion OTP
+  useEffect(() => {
+    if (deleteCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setDeleteCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [deleteCooldown]);
+
+  // Auto focus OTP input when entering OTP step
+  useEffect(() => {
+    if (showDeleteModal && deleteStep === 'otp' && deleteOtpInputRef.current) {
+      deleteOtpInputRef.current.focus();
+    }
+  }, [showDeleteModal, deleteStep]);
 
   // Handle image selection from PC
   const handleImageSelect = (e) => {
@@ -121,8 +149,83 @@ const ProfilePage = () => {
     navigate('/login');
   };
 
+  // Delete Account Modal Handlers
+  const handleOpenDeleteModal = () => {
+    setDeleteStep('confirm');
+    setEnteredDeleteOtp('');
+    setDeleteError('');
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    if (deleteLoading) return;
+    setShowDeleteModal(false);
+    setDeleteStep('confirm');
+    setEnteredDeleteOtp('');
+    setDeleteError('');
+    setDeleteLoading(false);
+  };
+
+  const handleSendDeleteOtp = async () => {
+    setDeleteError('');
+    setDeleteLoading(true);
+
+    try {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedDeleteOtp(code);
+      setDeleteOtpExpiry(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+      await sendAccountDeletionOTP(user.email, user.name, code);
+
+      setDeleteStep('otp');
+      setDeleteCooldown(60);
+      setToast({ message: `Deletion code sent to ${user.email}`, type: 'success' });
+    } catch (err) {
+      setDeleteError(err.message || 'Failed to send verification code. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleResendDeleteOtp = async () => {
+    if (deleteCooldown > 0 || deleteLoading) return;
+    await handleSendDeleteOtp();
+  };
+
+  const handleConfirmDelete = async (e) => {
+    e.preventDefault();
+    setDeleteError('');
+
+    const cleanCode = enteredDeleteOtp.trim();
+    if (!cleanCode || cleanCode.length !== 6) {
+      setDeleteError('Please enter the full 6-digit verification code.');
+      return;
+    }
+
+    if (Date.now() > deleteOtpExpiry) {
+      setDeleteError('Verification code has expired. Please request a new code.');
+      return;
+    }
+
+    if (cleanCode !== generatedDeleteOtp) {
+      setDeleteError('Invalid verification code. Please check your email and try again.');
+      return;
+    }
+
+    setDeleteLoading(true);
+
+    try {
+      await deleteAccount();
+      setShowDeleteModal(false);
+      navigate('/');
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || err.message || 'Failed to delete account.');
+      setDeleteLoading(false);
+    }
+  };
+
   return (
-    <div style={{ maxWidth: '540px', margin: '30px auto' }}>
+    <div style={{ maxWidth: '540px', margin: '30px auto', padding: '0 16px' }}>
       <div
         style={{
           background: 'var(--bg-card)',
@@ -320,6 +423,7 @@ const ProfilePage = () => {
 
         <hr style={{ borderColor: 'var(--border-color)', margin: '28px 0' }} />
 
+        {/* Sign Out Option */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Sign Out</div>
@@ -331,7 +435,311 @@ const ProfilePage = () => {
             Log Out
           </button>
         </div>
+
+        <hr style={{ borderColor: 'var(--border-color)', margin: '24px 0' }} />
+
+        {/* Danger Zone: Delete Account Option */}
+        <div
+          style={{
+            background: 'rgba(229, 9, 20, 0.05)',
+            border: '1px solid rgba(229, 9, 20, 0.35)',
+            borderRadius: 'var(--radius-md)',
+            padding: '18px 20px',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ff4d4d', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <line x1="10" y1="11" x2="10" y2="17" />
+                <line x1="14" y1="11" x2="14" y2="17" />
+              </svg>
+              Delete Account
+            </div>
+            <div style={{ color: 'var(--text-dim)', fontSize: '0.82rem', marginTop: '4px', lineHeight: 1.4 }}>
+              Permanently delete your CineVerse account, watchlist, and scheduled reminders.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleOpenDeleteModal}
+            className="btn"
+            style={{
+              background: '#e50914',
+              color: '#ffffff',
+              border: 'none',
+              padding: '9px 18px',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              borderRadius: 'var(--radius-md)',
+              cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(229, 9, 20, 0.35)',
+              transition: 'background 0.2s ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#b80710')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#e50914')}
+          >
+            Delete Account
+          </button>
+        </div>
       </div>
+
+      {/* ============================================================ */}
+      {/* DELETE ACCOUNT CONFIRMATION & OTP MODAL                       */}
+      {/* ============================================================ */}
+      {showDeleteModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(4, 6, 12, 0.85)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 1100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !deleteLoading) {
+              handleCloseDeleteModal();
+            }
+          }}
+        >
+          <div
+            style={{
+              background: '#0f1522',
+              border: '1px solid rgba(229, 9, 20, 0.5)',
+              borderRadius: '16px',
+              maxWidth: '440px',
+              width: '100%',
+              padding: '30px 26px',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.85), 0 0 25px rgba(229, 9, 20, 0.2)',
+              position: 'relative',
+            }}
+          >
+            {/* Close Button */}
+            <button
+              onClick={handleCloseDeleteModal}
+              disabled={deleteLoading}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-dim)',
+                fontSize: '1.2rem',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
+              title="Cancel"
+            >
+              ✕
+            </button>
+
+            {/* Modal Step 1: Warning & Send OTP */}
+            {deleteStep === 'confirm' && (
+              <>
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <div
+                    style={{
+                      width: '54px',
+                      height: '54px',
+                      borderRadius: '50%',
+                      background: 'rgba(229, 9, 20, 0.15)',
+                      border: '2px solid #e50914',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 14px',
+                      color: '#e50914',
+                    }}
+                  >
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                  </div>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', margin: '0 0 8px' }}>
+                    Delete CineVerse Account?
+                  </h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: 0, lineHeight: 1.5 }}>
+                    This action is <strong style={{ color: '#ff4d4d' }}>permanent and irreversible</strong>. All your watchlists, statuses, and reminder schedules will be deleted immediately.
+                  </p>
+                </div>
+
+                {deleteError && <div className="alert alert-error" style={{ marginBottom: '16px' }}>{deleteError}</div>}
+
+                <div
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                    borderRadius: '10px',
+                    padding: '14px',
+                    marginBottom: '22px',
+                    fontSize: '0.86rem',
+                    color: '#cbd5e1',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  To confirm it's really you, we will send a 6-digit verification code to:
+                  <div style={{ color: '#ffffff', fontWeight: 700, marginTop: '4px', wordBreak: 'break-all' }}>
+                    {email || user?.email}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={handleCloseDeleteModal}
+                    className="btn btn-outline"
+                    style={{ flex: 1 }}
+                    disabled={deleteLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendDeleteOtp}
+                    className="btn btn-primary"
+                    style={{ flex: 1.3, background: '#e50914', borderColor: '#e50914' }}
+                    disabled={deleteLoading}
+                  >
+                    {deleteLoading ? 'Sending Code...' : 'Send Deletion Code'}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Modal Step 2: Input OTP & Confirm Delete */}
+            {deleteStep === 'otp' && (
+              <form onSubmit={handleConfirmDelete}>
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <div
+                    style={{
+                      width: '54px',
+                      height: '54px',
+                      borderRadius: '50%',
+                      background: 'rgba(229, 9, 20, 0.15)',
+                      border: '2px solid #e50914',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 14px',
+                      color: '#e50914',
+                    }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </div>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', margin: '0 0 8px' }}>
+                    Verify Account Deletion
+                  </h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: 0 }}>
+                    Enter the 6-digit verification code sent to:
+                  </p>
+                  <div style={{ color: '#ffffff', fontWeight: 700, marginTop: '4px', fontSize: '0.9rem' }}>
+                    {email || user?.email}
+                  </div>
+                </div>
+
+                {deleteError && <div className="alert alert-error" style={{ marginBottom: '16px' }}>{deleteError}</div>}
+
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <input
+                    ref={deleteOtpInputRef}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    className="form-control"
+                    placeholder="••••••"
+                    value={enteredDeleteOtp}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setEnteredDeleteOtp(val);
+                      if (deleteError) setDeleteError('');
+                    }}
+                    style={{
+                      letterSpacing: '10px',
+                      fontSize: '1.8rem',
+                      textAlign: 'center',
+                      fontFamily: "'SFMono-Regular', Consolas, 'Courier New', monospace",
+                      fontWeight: 800,
+                      color: '#ffffff',
+                      background: '#070a10',
+                      border: '2px solid rgba(229, 9, 20, 0.6)',
+                      padding: '14px',
+                      borderRadius: '10px',
+                    }}
+                    required
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', fontSize: '0.8rem' }}>
+                    <span style={{ color: 'var(--text-dim)' }}>Valid for 5 minutes</span>
+                    <button
+                      type="button"
+                      onClick={handleResendDeleteOtp}
+                      disabled={deleteCooldown > 0 || deleteLoading}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: deleteCooldown > 0 ? 'var(--text-dim)' : 'var(--accent-hover)',
+                        fontSize: '0.82rem',
+                        cursor: deleteCooldown > 0 ? 'default' : 'pointer',
+                        padding: 0,
+                        textDecoration: deleteCooldown > 0 ? 'none' : 'underline',
+                      }}
+                    >
+                      {deleteCooldown > 0 ? `Resend code in ${deleteCooldown}s` : 'Resend Code'}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteStep('confirm');
+                      setDeleteError('');
+                    }}
+                    className="btn btn-outline"
+                    style={{ flex: 1 }}
+                    disabled={deleteLoading}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn"
+                    style={{
+                      flex: 1.5,
+                      background: '#e50914',
+                      color: '#ffffff',
+                      fontWeight: 700,
+                      border: 'none',
+                      borderRadius: 'var(--radius-md)',
+                      boxShadow: '0 2px 14px rgba(229, 9, 20, 0.4)',
+                    }}
+                    disabled={deleteLoading || enteredDeleteOtp.length !== 6}
+                  >
+                    {deleteLoading ? 'Deleting Account...' : 'Permanently Delete'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>

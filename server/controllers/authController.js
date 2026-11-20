@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Watchlist = require('../models/Watchlist');
 
 // Helper: Generate signed JWT token
 const generateToken = (userId) => {
@@ -243,10 +244,33 @@ const checkEmail = async (req, res, next) => {
   }
 };
 
+// @desc    Delete user account and all associated watchlist and reminder data
+// @route   DELETE /api/auth/profile
+// @access  Private (Requires JWT)
+const deleteAccount = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    // 1. Delete all watchlists and reminders associated with this user
+    await Watchlist.deleteMany({ userId });
+
+    // 2. Delete the user document
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Account and associated data deleted successfully.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
   updateProfile,
   checkEmail,
+  deleteAccount,
 };
