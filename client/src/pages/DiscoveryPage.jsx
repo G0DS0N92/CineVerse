@@ -3,7 +3,7 @@ import API from '../services/api';
 import MovieCard from '../components/MovieCard';
 import Toast from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const CATEGORIES = [
   {
@@ -46,10 +46,20 @@ const GENRES = [
 const DiscoveryPage = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [activeCategory, setActiveCategory] = useState('trending');
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sync search query from URL if navigated from navbar search bar
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('search');
+    if (q) {
+      setSearchQuery(q);
+    }
+  }, [location.search]);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('popularity');

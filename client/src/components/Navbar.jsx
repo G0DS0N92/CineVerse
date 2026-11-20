@@ -1,14 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const [navSearch, setNavSearch] = useState('');
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (navSearch.trim()) {
+      navigate(`/discover?search=${encodeURIComponent(navSearch.trim())}`);
+      setNavSearch('');
+    }
   };
 
   return (
@@ -73,6 +82,21 @@ const Navbar = () => {
             </>
           )}
         </ul>
+
+        {/* Navbar Search Form */}
+        <form onSubmit={handleSearchSubmit} className="nav-search-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="nav-search-icon">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search movies, actors, genres..."
+            value={navSearch}
+            onChange={(e) => setNavSearch(e.target.value)}
+            className="nav-search-input"
+          />
+        </form>
 
         {/* User Auth Actions */}
         <div className="nav-auth-buttons">

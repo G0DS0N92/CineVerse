@@ -1,151 +1,479 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import MovieCard from '../components/MovieCard';
+import Toast from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
+
+const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
+
+// Curated high-res upcoming movies starting with Avengers: Doomsday as Slide #1
+const DEFAULT_UPCOMING_SLIDES = [
+  {
+    id: 1003596,
+    title: 'Avengers: Doomsday',
+    backdrop_path: '/9N21RJNwDuYJP5M0Of3mN4xG3IA.jpg',
+    release_date: '17/12/2026',
+    tagline: 'A Multiverse on a collision course.',
+    overview:
+      "Beloved heroes from three distinct universes are set on a deadly collision course and face an existential threat unlike anything they've ever encountered.",
+  },
+  {
+    id: 1170608,
+    title: 'Dune: Part Three',
+    backdrop_path: '/i5E9H7Ik0u61ylDDTbmUpTL3Yw.jpg',
+    release_date: '15/12/2026',
+    tagline: 'The Holy War unfolds across the stars.',
+    overview:
+      'Paul Atreides faces the galactic fallout of the Holy War as he grapples with the terrifying destiny of his prescience and the fate of the known universe.',
+  },
+  {
+    id: 1003598,
+    title: 'Avengers: Secret Wars',
+    backdrop_path: '/rytc6Lf4447C0CDncwFa4gxe0vY.jpg',
+    release_date: '15/12/2027',
+    tagline: 'The collapse of reality.',
+    overview:
+      'The ultimate culmination of the Multiverse Saga where realities clash and heroes from across all time fight for the survival of the cosmos.',
+  },
+  {
+    id: 1260649,
+    title: 'Jumanji: Open World',
+    backdrop_path: '/vaYfhMuwFwsMqyMnu9amtS9hUHE.jpg',
+    release_date: '23/12/2026',
+    tagline: 'The game enters reality.',
+    overview:
+      "The perils of Jumanji escape the jungle into the modern world, forcing unexpected heroes to team up and survive the game's deadliest levels.",
+  },
+];
 
 const HomePage = () => {
   const { isAuthenticated } = useAuth();
-  const [trendingMovies, setTrendingMovies] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
+  const [trendingMovies, setTrendingMovies] = useState([]);
+  const [upcomingSlides, setUpcomingSlides] = useState(DEFAULT_UPCOMING_SLIDES);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
+  const [watchlistIds, setWatchlistIds] = useState(new Set());
+
+  // Helper: Format release date strictly to DD/MM/YYYY
+  const formatToDDMMYYYY = (dateStr) => {
+    if (!dateStr) return 'TBA';
+    if (dateStr.includes('/')) return dateStr;
+    const clean = dateStr.split('T')[0];
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day}/${month}/${year}`;
+    }
+    return dateStr;
+  };
+
+  // Fetch Trending and Live Upcoming Movies
   useEffect(() => {
-    const fetchTrending = async () => {
+    const fetchData = async () => {
       try {
-        const { data } = await API.get('/movies/trending');
-        if (data.success) {
-          setTrendingMovies(data.data.slice(0, 8)); // Top 8 trending
+        // Fetch trending movies for the preview row
+        const { data: trendData } = await API.get('/movies/trending');
+        if (trendData.success) {
+          setTrendingMovies(trendData.data.slice(0, 6)); // Top 6 trending
+        }
+
+        // Fetch upcoming movies to enhance slides with live TMDB data
+        const { data: upData } = await API.get('/movies/upcoming');
+        if (upData.success && Array.isArray(upData.data)) {
+          const liveWithBackdrops = upData.data.filter((m) => m.backdrop_path);
+
+          // Find Doomsday or keep default Doomsday as #1
+          const doomsday =
+            liveWithBackdrops.find((m) => m.id === 1003596 || m.title.includes('Doomsday')) ||
+            DEFAULT_UPCOMING_SLIDES[0];
+
+          // Filter out doomsday from the others and take top 4
+          const others = liveWithBackdrops
+            .filter((m) => m.id !== doomsday.id)
+            .slice(0, 4)
+            .map((m) => ({
+              ...m,
+              release_date: formatToDDMMYYYY(m.release_date),
+            }));
+
+          const combined = [
+            {
+              ...doomsday,
+              release_date: formatToDDMMYYYY(doomsday.release_date || '2026-12-17'),
+            },
+            ...others,
+          ];
+
+          if (combined.length >= 2) {
+            setUpcomingSlides(combined);
+          }
         }
       } catch (err) {
-        console.error('Failed to load trending movies', err);
+        console.error('Failed to load homepage movies', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTrending();
+    fetchData();
   }, []);
+
+  // Fetch user watchlist IDs for live toggle states (+ Watchlist vs Remove)
+  useEffect(() => {
+    const fetchUserWatchlist = async () => {
+      if (!isAuthenticated) {
+        setWatchlistIds(new Set());
+        return;
+      }
+      try {
+        const { data } = await API.get('/watchlist');
+        if (data.success && Array.isArray(data.data)) {
+          setWatchlistIds(new Set(data.data.map((item) => item.tmdbId)));
+        }
+      } catch (err) {
+        console.error('Failed to load user watchlist status', err);
+      }
+    };
+
+    fetchUserWatchlist();
+  }, [isAuthenticated]);
+
+  // Auto-advance slideshow every 5.5 seconds unless paused on hover
+  useEffect(() => {
+    if (isPaused || upcomingSlides.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % upcomingSlides.length);
+    }, 5500);
+
+    return () => clearInterval(interval);
+  }, [isPaused, upcomingSlides.length]);
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? upcomingSlides.length - 1 : prev - 1));
+  };
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % upcomingSlides.length);
+  };
+
+  // Add Movie to Watchlist
+  const handleAddToWatchlist = async (movie) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const payload = {
+        tmdbId: movie.id,
+        title: movie.title,
+        posterPath: movie.poster_path,
+        backdropPath: movie.backdrop_path,
+        overview: movie.overview,
+        releaseDate: movie.release_date,
+        voteAverage: movie.vote_average,
+        genres: movie.genre_ids ? movie.genre_ids.map(String) : [],
+        status: 'Planned to Watch',
+      };
+
+      await API.post('/watchlist', payload);
+      setWatchlistIds((prev) => new Set(prev).add(movie.id));
+      setToast({
+        message: `Added "${movie.title}" to your watchlist!`,
+        type: 'success',
+      });
+    } catch (err) {
+      setToast({
+        message: err.response?.data?.message || 'Could not add to watchlist',
+        type: 'error',
+      });
+    }
+  };
+
+  // Remove Movie from Watchlist
+  const handleRemoveFromWatchlist = async (movie) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await API.delete(`/watchlist/movie/${movie.id}`);
+      setWatchlistIds((prev) => {
+        const next = new Set(prev);
+        next.delete(movie.id);
+        return next;
+      });
+      setToast({
+        message: 'The Movie has been removed from watchlist',
+        type: 'error',
+      });
+    } catch (err) {
+      setToast({
+        message: err.response?.data?.message || 'Could not remove from watchlist',
+        type: 'error',
+      });
+    }
+  };
+
+  const activeSlide = upcomingSlides[currentSlide] || upcomingSlides[0];
 
   return (
     <div>
-      {/* Hero Showcase Section */}
+      {/* ========================================================
+          HERO CAROUSEL SECTION (MATCHING CINEMATIC MOCKUP)
+          ======================================================== */}
       <section
-        style={{
-          padding: '60px 20px',
-          textAlign: 'center',
-          background: 'radial-gradient(ellipse at center, rgba(229, 9, 20, 0.15) 0%, rgba(10, 13, 20, 0) 70%)',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: '50px',
-        }}
+        className="hero-showcase-container"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
       >
-        <span
-          style={{
-            display: 'inline-block',
-            padding: '4px 14px',
-            background: 'rgba(229, 9, 20, 0.15)',
-            color: 'var(--accent-hover)',
-            borderRadius: 'var(--radius-full)',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            marginBottom: '16px',
-            border: '1px solid rgba(229, 9, 20, 0.3)',
-          }}
+        {/* Backdrop Artwork on the Right with Dark Fade */}
+        <div className="hero-backdrop-wrap">
+          <img
+            key={activeSlide.id}
+            src={`${TMDB_BACKDROP_BASE}${activeSlide.backdrop_path}`}
+            alt={activeSlide.title}
+            className="hero-backdrop-img"
+          />
+          <div className="hero-backdrop-overlay" />
+        </div>
+
+        {/* Content on the Left */}
+        <div className="hero-content-left">
+          {/* Pill Badge */}
+          <div className="hero-pill-badge">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+              <line x1="7" y1="2" x2="7" y2="22" />
+              <line x1="17" y1="2" x2="17" y2="22" />
+            </svg>
+            <span>Your Personal Movie Companion</span>
+          </div>
+
+          {/* Main Cinematic Title */}
+          <h1 className="hero-main-title">
+            Discover. Watchlist.{' '}
+            <span className="hero-title-highlight">Remind.</span>
+          </h1>
+
+          {/* Upcoming Featured Movie Pill */}
+          <div className="hero-slide-preview-badge">
+            <span>Upcoming Premiere:</span>
+            <strong style={{ color: '#ffffff' }}>{activeSlide.title}</strong>
+            <span style={{ opacity: 0.7 }}>• {activeSlide.release_date}</span>
+          </div>
+
+          {/* Subtitle Description */}
+          <p className="hero-description">
+            CineVerse is an all-in-one movie platform to discover real-time trending titles, curate
+            personalized watchlists, and schedule smart reminders so you never miss a movie night.
+          </p>
+
+          {/* Action Buttons */}
+          <div className="hero-actions-row">
+            <Link to="/discover" className="hero-btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              <span>Explore Movies</span>
+            </Link>
+
+            {isAuthenticated ? (
+              <Link to="/watchlist" className="hero-btn-secondary">
+                <span>+ My Watchlist</span>
+              </Link>
+            ) : (
+              <Link to="/register" className="hero-btn-secondary">
+                <span>+ My Watchlist</span>
+              </Link>
+            )}
+          </div>
+
+          {/* Mini Feature Badges Row */}
+          <div className="hero-pillars-row">
+            <div className="hero-pillar-item">
+              <div className="hero-pillar-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <rect x="2" y="2" width="20" height="20" rx="2" />
+                  <line x1="7" y1="2" x2="7" y2="22" />
+                  <line x1="17" y1="2" x2="17" y2="22" />
+                </svg>
+              </div>
+              <div className="hero-pillar-text">
+                <strong>Real-Time Movies</strong>
+                <span>Powered by TMDB</span>
+              </div>
+            </div>
+
+            <div className="hero-pillar-item">
+              <div className="hero-pillar-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <div className="hero-pillar-text">
+                <strong>Personal Watchlists</strong>
+                <span>Plan • Track • Watch</span>
+              </div>
+            </div>
+
+            <div className="hero-pillar-item">
+              <div className="hero-pillar-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div className="hero-pillar-text">
+                <strong>Smart Reminders</strong>
+                <span>Never miss a release</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Carousel Navigation Arrows */}
+        <button
+          type="button"
+          className="hero-nav-arrow left"
+          onClick={handlePrevSlide}
+          aria-label="Previous upcoming movie"
         >
-          Smart Movie Watchlist & Reminder Platform
-        </span>
+          &#8249;
+        </button>
+        <button
+          type="button"
+          className="hero-nav-arrow right"
+          onClick={handleNextSlide}
+          aria-label="Next upcoming movie"
+        >
+          &#8250;
+        </button>
 
-        <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', fontWeight: 900, lineHeight: 1.15, marginBottom: '20px' }}>
-          Your Personal Cinema Universe, <br />
-          <span style={{ color: 'var(--accent-primary)' }}>Perfected.</span>
-        </h1>
-
-        <p style={{ maxWidth: '640px', margin: '0 auto 30px', color: 'var(--text-muted)', fontSize: '1.1rem' }}>
-          Discover trending titles with real-time movie data, organize your watchlists by status,
-          and schedule reminders so you never miss another cinematic masterpiece.
-        </p>
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <Link to="/discover" className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1.05rem' }}>
-            Discover Movies
-          </Link>
-          {!isAuthenticated ? (
-            <Link to="/register" className="btn btn-secondary" style={{ padding: '12px 28px', fontSize: '1.05rem' }}>
-              Create Free Account
-            </Link>
-          ) : (
-            <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '12px 28px', fontSize: '1.05rem' }}>
-              Go to Dashboard &rarr;
-            </Link>
-          )}
+        {/* Slide Indicator Dots */}
+        <div className="hero-dots-row">
+          {upcomingSlides.map((s, idx) => (
+            <button
+              key={s.id || idx}
+              type="button"
+              className={`hero-dot ${idx === currentSlide ? 'active' : ''}`}
+              onClick={() => setCurrentSlide(idx)}
+              aria-label={`Jump to slide ${idx + 1}`}
+            />
+          ))}
         </div>
       </section>
 
-      {/* Feature Pillars */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px', marginBottom: '60px' }}>
-        <div style={{ background: 'var(--bg-card)', padding: '28px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-          <div style={{ color: 'var(--accent-primary)', marginBottom: '16px' }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="10 8 16 12 10 16 10 8" />
+      {/* ========================================================
+          FOUR MODERN FEATURE CARDS (MATCHING REFERENCE MOCKUP)
+          ======================================================== */}
+      <section className="feature-cards-grid-modern">
+        <Link to="/discover" className="feature-card-modern">
+          <div className="feature-card-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
           </div>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Real-Time Discovery</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-            Powered by live TMDB integration. Access popular, top-rated, upcoming releases and instant movie search.
-          </p>
-        </div>
+          <div className="feature-card-text">
+            <h3>Discover Movies</h3>
+            <p>Explore trending, popular, and upcoming titles in real-time.</p>
+          </div>
+        </Link>
 
-        <div style={{ background: 'var(--bg-card)', padding: '28px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-          <div style={{ color: 'var(--accent-blue)', marginBottom: '16px' }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Link to="/watchlist" className="feature-card-modern">
+          <div className="feature-card-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
           </div>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Personal Watchlists</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-            Categorize titles as <em>Planned</em>, <em>Currently Watching</em>, or <em>Watched</em>. No duplicate entries, completely private.
-          </p>
-        </div>
+          <div className="feature-card-text">
+            <h3>Curate Watchlists</h3>
+            <p>Organize movies by Planned, Currently Watching, or Watched.</p>
+          </div>
+        </Link>
 
-        <div style={{ background: 'var(--bg-card)', padding: '28px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-          <div style={{ color: 'var(--accent-gold)', marginBottom: '16px' }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
+        <Link to="/reminders" className="feature-card-modern">
+          <div className="feature-card-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
           </div>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Smart Reminders</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-            Schedule specific watch dates, times, and personal notes. Track upcoming and overdue plans from your dashboard.
-          </p>
-        </div>
+          <div className="feature-card-text">
+            <h3>Smart Reminders</h3>
+            <p>Set custom date & time reminders for your movie plans.</p>
+          </div>
+        </Link>
+
+        <Link to="/dashboard" className="feature-card-modern">
+          <div className="feature-card-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+          </div>
+          <div className="feature-card-text">
+            <h3>Your Movie Stats</h3>
+            <p>Track your watching journey with personal insights and progress.</p>
+          </div>
+        </Link>
       </section>
 
-      {/* Trending Movies Preview */}
+      {/* ========================================================
+          TRENDING NOW SECTION (MATCHING REFERENCE MOCKUP)
+          ======================================================== */}
       <section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <div>
-            <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Trending Today</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>The most popular movies right now</p>
+        <div className="section-header-modern">
+          <div className="section-title-wrap">
+            <div className="section-title-bar" />
+            <div className="section-title-text">
+              <h2>Trending Now</h2>
+              <p>The most popular movies right now</p>
+            </div>
           </div>
-          <Link to="/discover" className="btn btn-outline btn-sm">
-            View All &rarr;
+
+          <Link to="/discover" className="section-view-all-link">
+            <span>View All</span>
+            <span>&rarr;</span>
           </Link>
         </div>
 
         {loading ? (
           <div className="loading-container">
-            <div className="spinner"></div>
+            <div className="spinner" />
             <p>Fetching trending movies...</p>
           </div>
         ) : (
           <div className="movies-grid">
             {trendingMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                isInWatchlist={watchlistIds.has(movie.id)}
+                onAddToWatchlist={handleAddToWatchlist}
+                onRemoveFromWatchlist={handleRemoveFromWatchlist}
+              />
             ))}
           </div>
         )}
       </section>
+
+      {/* Center-Bottom Floating Toast Notification */}
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 };
