@@ -3,7 +3,7 @@ import React from 'react';
 const Footer = () => {
   return (
     <footer className="footer">
-      <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="footer-container">
         <p>
           <strong>CineVerse</strong> &copy; {new Date().getFullYear()} – Built with the MERN Stack (MongoDB, Express, React, Node.js).
         </p>

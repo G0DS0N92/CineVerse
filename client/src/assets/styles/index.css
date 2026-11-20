@@ -61,37 +61,15 @@ a {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
 }
 
 .main-content {
   flex: 1;
-  padding: 24px 20px 60px;
-  max-width: 1600px;
+  padding: 24px 0 60px;
+  max-width: 1360px;
+  width: 86%;
   margin: 0 auto;
-  width: 92%;
-}
-
-/* Homepage: let content breathe edge-to-edge */
-.homepage-wrapper {
-  /* Break out of parent .main-content constraints */
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  padding: 0;
-  overflow-x: hidden;
-}
-
-.homepage-wrapper .feature-cards-grid-modern,
-.homepage-wrapper .homepage-inner-section {
-  max-width: 1600px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 40px;
-  padding-right: 40px;
-}
-
-.homepage-wrapper .feature-cards-grid-modern {
-  padding-top: 0;
-  padding-bottom: 0;
 }
 
 /* ========================================================
@@ -105,15 +83,17 @@ a {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
-  padding: 14px 24px;
+  padding: 12px 0;
 }
 
 .navbar-container {
-  max-width: 1600px;
+  max-width: 1360px;
+  width: 86%;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
 }
 
 .brand-logo {
@@ -633,11 +613,20 @@ a {
 .footer {
   border-top: 1px solid var(--border-color);
   background: var(--bg-secondary);
-  padding: 30px 20px;
+  padding: 28px 0;
   text-align: center;
   color: var(--text-dim);
   font-size: 0.85rem;
   margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1360px;
+  width: 86%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .footer a {
@@ -943,16 +932,15 @@ a {
 .hero-showcase-container {
   position: relative;
   width: 100%;
-  min-height: 540px;
-  border-radius: 0;
+  min-height: 500px;
+  border-radius: 18px;
   overflow: hidden;
   background: #080c14;
-  border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 24px;
   display: flex;
   align-items: center;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
 }
 
 .hero-backdrop-wrap {
@@ -989,8 +977,8 @@ a {
 .hero-content-left {
   position: relative;
   z-index: 2;
-  max-width: 620px;
-  padding: 54px 60px;
+  max-width: 560px;
+  padding: 42px 44px;
   display: flex;
   flex-direction: column;
 }
@@ -1205,9 +1193,10 @@ a {
 /* 4 Feature Cards Below Hero */
 .feature-cards-grid-modern {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 48px;
+  margin-bottom: 38px;
+  width: 100%;
 }
 
 .feature-card-modern {
@@ -1308,6 +1297,42 @@ a {
   transform: translateX(3px);
 }
 
+/* Synchronized 6-Column Grid for Homepage Trending Movies */
+.home-movies-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .home-movies-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-movies-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Compact buttons for synchronized movie cards */
+.movie-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.movie-card-actions .btn {
+  font-size: 0.8rem;
+  padding: 6px 4px;
+  white-space: nowrap;
+  text-align: center;
+}
+
 /* Release Date Badge for Unreleased Movies */
 .movie-date-badge {
   position: absolute;
@@ -1340,12 +1365,17 @@ a {
   .hero-nav-arrow {
     display: none;
   }
-  .homepage-wrapper .feature-cards-grid-modern,
-  .homepage-wrapper .section-header-modern,
-  .homepage-wrapper .movies-grid,
-  .homepage-wrapper .loading-container {
-    padding-left: 16px;
-    padding-right: 16px;
+  .feature-cards-grid-modern {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .feature-cards-grid-modern {
+    grid-template-columns: 1fr;
+  }
+  .main-content {
+    width: 94%;
   }
 }
 

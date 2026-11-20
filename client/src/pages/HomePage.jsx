@@ -224,7 +224,7 @@ const HomePage = () => {
   const activeSlide = upcomingSlides[currentSlide] || upcomingSlides[0];
 
   return (
-    <div className="homepage-wrapper">
+    <div>
       {/* ========================================================
           HERO CAROUSEL SECTION (MATCHING CINEMATIC MOCKUP)
           ======================================================== */}
@@ -436,7 +436,7 @@ const HomePage = () => {
       {/* ========================================================
           TRENDING NOW SECTION (MATCHING REFERENCE MOCKUP)
           ======================================================== */}
-      <section className="homepage-inner-section">
+      <section className="home-trending-section">
         <div className="section-header-modern">
           <div className="section-title-wrap">
             <div className="section-title-bar" />
@@ -458,7 +458,7 @@ const HomePage = () => {
             <p>Fetching trending movies...</p>
           </div>
         ) : (
-          <div className="movies-grid">
+          <div className="home-movies-grid">
             {trendingMovies.map((movie) => (
               <MovieCard
                 key={movie.id}
