@@ -39,6 +39,8 @@ const addToWatchlist = async (req, res, next) => {
       voteAverage,
       genres,
       status,
+      certification,
+      adult,
       reminderDate,
       reminderTime,
       notes,
@@ -49,6 +51,47 @@ const addToWatchlist = async (req, res, next) => {
         success: false,
         message: 'Movie ID and title are required.',
       });
+    }
+
+    // Age restriction enforcement: Underage users (< 18) cannot add adult / 18+ content
+    const userAge = req.user.age;
+    if (userAge !== null && userAge !== undefined && userAge < 18) {
+      let isRestricted = false;
+      let certName = certification || '';
+
+      if (adult === true) {
+        isRestricted = true;
+      }
+
+      const adultCerts = ['R', 'NC-17', '18', '18+', 'A', 'TV-MA', 'X', 'R18'];
+      if (certName && adultCerts.includes(certName.toUpperCase())) {
+        isRestricted = true;
+      }
+
+      if (!isRestricted) {
+        try {
+          const tmdbService = require('../services/tmdbService');
+          const details = await tmdbService.getMovieDetails(tmdbId);
+          if (details) {
+            if (details.adult) {
+              isRestricted = true;
+              certName = '18+';
+            } else if (details.certification && adultCerts.includes(details.certification.toUpperCase())) {
+              isRestricted = true;
+              certName = details.certification;
+            }
+          }
+        } catch (e) {
+          // ignore lookup failure
+        }
+      }
+
+      if (isRestricted) {
+        return res.status(403).json({
+          success: false,
+          message: `Content Restricted: This movie is rated ${certName || '18+'} (Adults Only). Underage users (${userAge} y/o) cannot add adult content to their watchlist.`,
+        });
+      }
     }
 
     // Check if already in watchlist
@@ -93,6 +136,8 @@ const addToWatchlist = async (req, res, next) => {
       voteAverage: voteAverage || 0,
       genres: Array.isArray(genres) ? genres : [],
       status: status || 'Planned to Watch',
+      certification: certification || '',
+      adult: adult === true,
       reminderDate: reminderDate || '',
       reminderTime: reminderTime || '',
       reminderStatus,

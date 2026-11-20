@@ -1,11 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CustomDatePicker from './CustomDatePicker';
-
-const TIME_PRESETS = [
-  { label: '15:00', time: '15:00' },
-  { label: '20:00', time: '20:00' },
-  { label: '22:00', time: '22:00' },
-];
 
 const formatDDMMYYYY = (dateStr) => {
   if (!dateStr) return '';
@@ -19,6 +13,7 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
   const [reminderDate, setReminderDate] = useState('');
   const [reminderTime, setReminderTime] = useState('20:00');
   const [notes, setNotes] = useState('');
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     if (movie) {
@@ -27,6 +22,22 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
       setNotes(movie.notes || '');
     }
   }, [movie]);
+
+  // Auto-expand textarea on content change
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+    }
+  }, [notes, isOpen]);
+
+  const handleNotesChange = (e) => {
+    setNotes(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+    }
+  };
 
   if (!isOpen || !movie) return null;
 
@@ -58,7 +69,7 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
       <div
         className="modal-content custom-reminder-modal"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: '460px' }}
+        style={{ maxWidth: '680px', width: '94%', padding: '24px 28px' }}
       >
         <button className="modal-close-btn" onClick={onClose}>
           &times;
@@ -66,7 +77,7 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
 
         {/* Modal Header */}
         <div style={{ marginBottom: '18px' }}>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '4px' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '4px' }}>
             Schedule Movie Watch
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
@@ -75,76 +86,109 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Custom Dark Theme Interactive Calendar */}
-          <div className="form-group" style={{ marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <label className="form-label" style={{ margin: 0 }}>
-                Select Watch Date
-              </label>
-              {reminderDate && (
-                <span className="selected-date-badge">
-                  {formatDDMMYYYY(reminderDate)}
-                </span>
-              )}
+          {/* Horizontal 2-Column Layout */}
+          <div className="reminder-modal-grid">
+            {/* Left Column: Red & Black Interactive Calendar */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '8px',
+                }}
+              >
+                <label className="form-label" style={{ margin: 0 }}>
+                  Select Watch Date
+                </label>
+                {reminderDate && (
+                  <span className="selected-date-badge">
+                    {formatDDMMYYYY(reminderDate)}
+                  </span>
+                )}
+              </div>
+
+              <CustomDatePicker
+                selectedDate={reminderDate}
+                onDateSelect={(d) => setReminderDate(d)}
+              />
             </div>
 
-            <CustomDatePicker
-              selectedDate={reminderDate}
-              onDateSelect={(d) => setReminderDate(d)}
-            />
-          </div>
+            {/* Right Column: Time Selector, Auto-Expanding Note & Actions */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                height: '100%',
+                minHeight: '320px',
+              }}
+            >
+              <div>
+                {/* Time Selector (Quick preset buttons removed as requested) */}
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <label className="form-label">Reminder Time</label>
+                  <input
+                    type="time"
+                    className="form-control"
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      fontSize: '0.95rem',
+                      background: 'rgba(10, 14, 22, 0.8)',
+                      borderColor: 'rgba(229, 9, 20, 0.25)',
+                    }}
+                    value={reminderTime}
+                    onChange={(e) => setReminderTime(e.target.value)}
+                    required
+                  />
+                </div>
 
-          {/* Time Selector with Quick Presets */}
-          <div className="form-group" style={{ marginBottom: '16px' }}>
-            <label className="form-label">Reminder Time</label>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <input
-                type="time"
-                className="form-control"
-                style={{ width: '130px', padding: '8px 12px' }}
-                value={reminderTime}
-                onChange={(e) => setReminderTime(e.target.value)}
-                required
-              />
-              <div style={{ display: 'flex', gap: '6px', flex: 1 }}>
-                {TIME_PRESETS.map((p) => (
-                  <button
-                    key={p.time}
-                    type="button"
-                    className={`btn btn-sm ${
-                      reminderTime === p.time ? 'btn-primary' : 'btn-secondary'
-                    }`}
-                    style={{ flex: 1, padding: '6px 8px', fontSize: '0.8rem' }}
-                    onClick={() => setReminderTime(p.time)}
-                  >
-                    {p.label}
-                  </button>
-                ))}
+                {/* Personal Note (Auto-extends as user types) */}
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <label className="form-label">Personal Note (Optional)</label>
+                  <textarea
+                    ref={textareaRef}
+                    className="form-control"
+                    rows="3"
+                    placeholder="e.g., Movie night with friends, grab popcorn!"
+                    value={notes}
+                    onChange={handleNotesChange}
+                    maxLength={500}
+                    style={{
+                      resize: 'none',
+                      overflowY: notes.length > 200 ? 'auto' : 'hidden',
+                      minHeight: '85px',
+                      maxHeight: '180px',
+                      transition: 'height 0.12s ease',
+                      background: 'rgba(10, 14, 22, 0.8)',
+                      borderColor: 'rgba(229, 9, 20, 0.25)',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '12px',
+                  paddingTop: '10px',
+                }}
+              >
+                <button type="button" className="btn btn-secondary" onClick={onClose}>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ minWidth: '135px' }}
+                >
+                  Save Reminder
+                </button>
               </div>
             </div>
-          </div>
-
-          {/* Personal Note */}
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label className="form-label">Personal Note (Optional)</label>
-            <textarea
-              className="form-control"
-              rows="2"
-              placeholder="e.g., Movie night with friends, grab popcorn!"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              maxLength={500}
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="btn btn-primary" style={{ minWidth: '140px' }}>
-              Save Reminder
-            </button>
           </div>
         </form>
       </div>

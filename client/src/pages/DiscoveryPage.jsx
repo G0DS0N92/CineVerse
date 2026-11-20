@@ -215,6 +215,7 @@ const DiscoveryPage = () => {
         voteAverage: movie.vote_average,
         genres: movie.genre_ids ? movie.genre_ids.map(String) : [],
         status: 'Planned to Watch',
+        adult: movie.adult === true,
       };
 
       await API.post('/watchlist', payload);

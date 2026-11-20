@@ -46,6 +46,14 @@ const watchlistSchema = new mongoose.Schema(
       enum: ['Planned to Watch', 'Currently Watching', 'Watched'],
       default: 'Planned to Watch',
     },
+    certification: {
+      type: String,
+      default: '',
+    },
+    adult: {
+      type: Boolean,
+      default: false,
+    },
     userRating: {
       type: Number,
       min: 0,

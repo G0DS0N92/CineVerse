@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false, // Don't return password by default in queries
     },
+    age: {
+      type: Number,
+      min: [1, 'Age must be at least 1'],
+      max: [120, 'Age cannot exceed 120'],
+      default: null,
+    },
     avatar: {
       type: String,
       default: '',

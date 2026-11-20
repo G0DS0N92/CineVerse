@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const RegisterPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [age, setAge] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,10 +28,16 @@ const RegisterPage = () => {
       return;
     }
 
+    const numAge = Number(age);
+    if (!age || isNaN(numAge) || numAge < 1 || numAge > 120) {
+      setError('Please provide a valid age between 1 and 120');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await register(name, email, password);
+      await register(name, email, password, numAge);
       navigate('/dashboard');
     } catch (err) {
       setError(
@@ -84,6 +91,23 @@ const RegisterPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Age</label>
+            <input
+              type="number"
+              className="form-control"
+              placeholder="e.g. 21"
+              min="1"
+              max="120"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              required
+            />
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: '4px', display: 'block' }}>
+              Used to personalize content and apply age ratings (18+ filters).
+            </span>
           </div>
 
           <div className="form-group">

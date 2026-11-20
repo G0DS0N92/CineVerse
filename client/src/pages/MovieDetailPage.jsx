@@ -83,6 +83,8 @@ const MovieDetailPage = () => {
         voteAverage: movie.vote_average,
         genres: movie.genres ? movie.genres.map((g) => g.name) : [],
         status: 'Planned to Watch',
+        certification: movie.certification || '',
+        adult: movie.adult === true,
       };
 
       await API.post('/watchlist', payload);
@@ -125,6 +127,8 @@ const MovieDetailPage = () => {
         voteAverage: movie.vote_average,
         genres: movie.genres ? movie.genres.map((g) => g.name) : [],
         status: 'Planned to Watch',
+        certification: movie.certification || '',
+        adult: movie.adult === true,
         ...reminderData,
       };
 
@@ -240,11 +244,29 @@ const MovieDetailPage = () => {
               </p>
             )}
 
-            {/* Meta Row: Rating, Year, Runtime */}
+            {/* Meta Row: Rating, Year, Runtime, Age Rating */}
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
               <span className="movie-rating-badge" style={{ position: 'static' }}>
                 ★ {Number(movie.vote_average || 0).toFixed(1)} / 10
               </span>
+
+              {movie.certification && (
+                <span
+                  style={{
+                    background: 'rgba(229, 9, 20, 0.18)',
+                    color: '#ff4d4d',
+                    border: '1px solid rgba(229, 9, 20, 0.45)',
+                    padding: '3px 9px',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    letterSpacing: '0.5px',
+                  }}
+                  title={`Age Rating: ${movie.certification}`}
+                >
+                  {movie.certification}
+                </span>
+              )}
 
               <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
                 Release Date: {formatToDDMMYYYY(movie.release_date)}

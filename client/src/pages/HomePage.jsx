@@ -216,6 +216,7 @@ const HomePage = () => {
           ? movie.genres
           : [],
         status: 'Planned to Watch',
+        adult: movie.adult === true,
       };
 
       await API.post('/watchlist', payload);

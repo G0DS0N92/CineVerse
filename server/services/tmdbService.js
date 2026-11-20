@@ -198,6 +198,29 @@ const getMovieDetails = async (movieId) => {
       } else if (usDate) {
         data.release_date = usDate;
       }
+
+      // Extract regional age rating / certification (e.g. PG-13, R, 18+, A, U/A)
+      let certification = '';
+      const gbCountry = data.release_dates.results.find((c) => c.iso_3166_1 === 'GB');
+
+      const getCert = (c) => {
+        if (!c || !Array.isArray(c.release_dates)) return '';
+        const match = c.release_dates.find((d) => d.certification && d.certification.trim());
+        return match ? match.certification.trim() : '';
+      };
+
+      certification = getCert(usCountry) || getCert(gbCountry) || getCert(inCountry);
+      if (!certification) {
+        for (const c of data.release_dates.results) {
+          const found = getCert(c);
+          if (found) {
+            certification = found;
+            break;
+          }
+        }
+      }
+
+      data.certification = certification || (data.adult ? '18+' : '');
     }
     return data;
   }

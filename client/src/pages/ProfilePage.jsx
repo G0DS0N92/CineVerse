@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 const ProfilePage = () => {
   const { user, updateProfile, logout } = useAuth();
   const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || '');
   const [message, setMessage] = useState('');
@@ -18,6 +20,8 @@ const ProfilePage = () => {
   useEffect(() => {
     if (user) {
       setName(user.name || '');
+      setEmail(user.email || '');
+      setAge(user.age ? String(user.age) : '');
       setAvatar(user.avatar || '');
       setAvatarPreview(user.avatar || '');
     }
@@ -87,10 +91,22 @@ const ProfilePage = () => {
     e.preventDefault();
     setMessage('');
     setError('');
+
+    const parsedAge = age ? Number(age) : null;
+    if (age && (isNaN(parsedAge) || parsedAge < 1 || parsedAge > 120)) {
+      setError('Please provide a valid age between 1 and 120.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await updateProfile({ name, avatar });
+      await updateProfile({
+        name,
+        email,
+        age: parsedAge,
+        avatar,
+      });
       setMessage('Profile updated successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
@@ -267,14 +283,30 @@ const ProfilePage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Email Address (Read-only)</label>
+            <label className="form-label">Email Address</label>
             <input
               type="email"
               className="form-control"
-              value={user?.email || ''}
-              disabled
-              style={{ opacity: 0.7, cursor: 'not-allowed' }}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Age</label>
+            <input
+              type="number"
+              className="form-control"
+              min="1"
+              max="120"
+              placeholder="e.g. 21"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: '4px', display: 'block' }}>
+              Used to filter age-appropriate movie recommendations (18+ restrictions apply under 18).
+            </span>
           </div>
 
           <button

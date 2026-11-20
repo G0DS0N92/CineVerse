@@ -15,7 +15,7 @@ const generateToken = (userId) => {
 // @access  Public
 const register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, age } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -41,10 +41,12 @@ const register = async (req, res, next) => {
     }
 
     // Create user (password is automatically hashed by pre-save hook)
+    const parsedAge = age !== undefined && age !== null && age !== '' ? Number(age) : null;
     const user = await User.create({
       name,
       email: email.toLowerCase(),
       password,
+      age: parsedAge,
     });
 
     const token = generateToken(user._id);
@@ -56,6 +58,7 @@ const register = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        age: user.age || null,
         avatar: user.avatar || '',
       },
     });
@@ -106,6 +109,7 @@ const login = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        age: user.age || null,
         avatar: user.avatar || '',
       },
     });
@@ -125,6 +129,7 @@ const getMe = async (req, res, next) => {
         _id: req.user._id,
         name: req.user.name,
         email: req.user.email,
+        age: req.user.age || null,
         avatar: req.user.avatar || '',
       },
     });
@@ -133,12 +138,12 @@ const getMe = async (req, res, next) => {
   }
 };
 
-// @desc    Update user profile name and avatar
+// @desc    Update user profile name, email, age, and avatar
 // @route   PATCH /api/auth/profile
 // @access  Private (Requires JWT)
 const updateProfile = async (req, res, next) => {
   try {
-    const { name, avatar } = req.body;
+    const { name, email, age, avatar } = req.body;
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -150,6 +155,36 @@ const updateProfile = async (req, res, next) => {
 
     if (name && name.trim()) {
       user.name = name.trim();
+    }
+
+    if (email && email.trim()) {
+      const cleanEmail = email.trim().toLowerCase();
+      // Verify email format
+      const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a valid email address.',
+        });
+      }
+
+      // Check if another user already has this email
+      const existingUser = await User.findOne({
+        email: cleanEmail,
+        _id: { $ne: user._id },
+      });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'This email is already in use by another account.',
+        });
+      }
+
+      user.email = cleanEmail;
+    }
+
+    if (age !== undefined) {
+      user.age = age !== null && age !== '' ? Number(age) : null;
     }
 
     if (typeof avatar === 'string') {
@@ -164,6 +199,7 @@ const updateProfile = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        age: user.age || null,
         avatar: user.avatar || '',
       },
     });
