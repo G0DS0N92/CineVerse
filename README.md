@@ -1,6 +1,6 @@
 # 🎬 CineVerse – Smart Movie Watchlist & Reminder Platform
 
-CineVerse is an all-in-one personal movie companion designed to streamline how film lovers discover, organize, and plan their entertainment. The platform lets users explore real-time trending titles, build curated personal watchlists categorized by custom viewing statuses, and schedule smart watch reminders with personalized notes so they never miss a movie night. With an intuitive cinema dashboard, CineVerse transforms scattered movie recommendations into a beautifully organized viewing experience.
+CineVerse is an all-in-one personal movie companion to discover real-time trending titles, curate watchlists across custom viewing states, and schedule smart watch reminders so you never miss a movie night.
 
 ---
 
@@ -90,7 +90,7 @@ cineverse/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/soham-ecs92/CineVerse.git
+   git clone https://github.com/G0DS0N92/CineVerse.git
    cd CineVerse
    ```
 
