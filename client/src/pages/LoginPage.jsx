@@ -31,12 +31,6 @@ const LoginPage = () => {
     }
   };
 
-  // Demo Credentials Fill Helper
-  const handleFillDemo = () => {
-    setEmail('demo@cineverse.com');
-    setPassword('password123');
-  };
-
   return (
     <div style={{ maxWidth: '440px', margin: '40px auto' }}>
       <div
@@ -91,17 +85,6 @@ const LoginPage = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            style={{ width: '100%' }}
-            onClick={handleFillDemo}
-          >
-            ⚡ Auto-Fill Demo Credentials
-          </button>
-        </div>
 
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Don't have an account?{' '}
