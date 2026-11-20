@@ -17,6 +17,19 @@ const MovieDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [isReminderOpen, setIsReminderOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+
+  // Helper: Format release date strictly to DD/MM/YYYY
+  const formatToDDMMYYYY = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    const clean = dateStr.split('T')[0];
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day}/${month}/${year}`;
+    }
+    return dateStr;
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -34,6 +47,24 @@ const MovieDetailPage = () => {
 
     fetchDetails();
   }, [id]);
+
+  // Check if current movie is already in user's watchlist
+  useEffect(() => {
+    const checkWatchlistStatus = async () => {
+      if (!isAuthenticated || !movie) return;
+      try {
+        const { data } = await API.get('/watchlist');
+        if (data.success && Array.isArray(data.data)) {
+          const exists = data.data.some((item) => item.tmdbId === movie.id);
+          setIsInWatchlist(exists);
+        }
+      } catch (err) {
+        console.error('Failed to check watchlist status', err);
+      }
+    };
+
+    checkWatchlistStatus();
+  }, [movie, isAuthenticated]);
 
   const handleAddWatchlist = async () => {
     if (!isAuthenticated) {
@@ -55,9 +86,25 @@ const MovieDetailPage = () => {
       };
 
       await API.post('/watchlist', payload);
+      setIsInWatchlist(true);
       setToast({ message: `Added "${movie.title}" to your watchlist!`, type: 'success' });
     } catch (err) {
       setToast({ message: err.response?.data?.message || 'Could not add to watchlist', type: 'error' });
+    }
+  };
+
+  const handleRemoveWatchlist = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await API.delete(`/watchlist/movie/${movie.id}`);
+      setIsInWatchlist(false);
+      setToast({ message: 'The Movie has been removed from watchlist', type: 'error' });
+    } catch (err) {
+      setToast({ message: err.response?.data?.message || 'Could not remove from watchlist', type: 'error' });
     }
   };
 
@@ -197,8 +244,8 @@ const MovieDetailPage = () => {
                 ★ {Number(movie.vote_average || 0).toFixed(1)} / 10
               </span>
 
-              <span style={{ color: 'var(--text-muted)' }}>
-                {movie.release_date || 'Unknown Date'}
+              <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
+                Release Date: {formatToDDMMYYYY(movie.release_date)}
               </span>
 
               {movie.runtime > 0 && (
@@ -236,12 +283,36 @@ const MovieDetailPage = () => {
             </p>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-              <button onClick={handleAddWatchlist} className="btn btn-primary">
-                + Add to Watchlist
-              </button>
+            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+              {isInWatchlist ? (
+                <button
+                  type="button"
+                  onClick={handleRemoveWatchlist}
+                  className="btn btn-sm"
+                  style={{
+                    background: '#dc2626',
+                    borderColor: '#b91c1c',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    padding: '10px 22px',
+                    fontSize: '0.95rem',
+                  }}
+                  title="Remove this movie from your watchlist"
+                >
+                  Remove from Watchlist
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleAddWatchlist}
+                  className="btn btn-primary"
+                  style={{ padding: '10px 22px', fontSize: '0.95rem' }}
+                >
+                  + Add to Watchlist
+                </button>
+              )}
 
-              <button onClick={() => setIsReminderOpen(true)} className="btn btn-secondary">
+              <button type="button" onClick={() => setIsReminderOpen(true)} className="btn btn-secondary" style={{ padding: '10px 22px' }}>
                 Schedule Reminder
               </button>
             </div>

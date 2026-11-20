@@ -174,10 +174,33 @@ const searchMovies = async (query, page = 1) => {
 
 const getMovieDetails = async (movieId) => {
   const data = await fetchFromTMDB(`/movie/${movieId}`, {
-    append_to_response: 'videos,credits,similar',
+    append_to_response: 'videos,credits,similar,release_dates',
   });
 
-  if (data) return data;
+  if (data) {
+    // Determine the most accurate regional theatrical launch date
+    if (data.release_dates && Array.isArray(data.release_dates.results)) {
+      const inCountry = data.release_dates.results.find((c) => c.iso_3166_1 === 'IN');
+      const usCountry = data.release_dates.results.find((c) => c.iso_3166_1 === 'US');
+
+      const findTheatrical = (c) => {
+        if (!c || !Array.isArray(c.release_dates)) return null;
+        // Type 3 is general theatrical release; fallback to first available
+        const theatrical = c.release_dates.find((d) => d.type === 3) || c.release_dates[0];
+        return theatrical ? theatrical.release_date.split('T')[0] : null;
+      };
+
+      const inDate = findTheatrical(inCountry);
+      const usDate = findTheatrical(usCountry);
+
+      if (inDate) {
+        data.release_date = inDate;
+      } else if (usDate) {
+        data.release_date = usDate;
+      }
+    }
+    return data;
+  }
 
   const fallback = FALLBACK_MOVIES.find((m) => m.id === parseInt(movieId, 10)) || FALLBACK_MOVIES[0];
   return {

@@ -54,6 +54,27 @@ const DiscoveryPage = () => {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('popularity');
   const [toast, setToast] = useState(null);
+  const [watchlistIds, setWatchlistIds] = useState(new Set());
+
+  // Load user's saved watchlist IDs to show live toggle state (+ Watchlist vs Remove)
+  useEffect(() => {
+    const fetchUserWatchlist = async () => {
+      if (!isAuthenticated) {
+        setWatchlistIds(new Set());
+        return;
+      }
+      try {
+        const { data } = await API.get('/watchlist');
+        if (data.success && Array.isArray(data.data)) {
+          setWatchlistIds(new Set(data.data.map((item) => item.tmdbId)));
+        }
+      } catch (err) {
+        console.error('Failed to load user watchlist status', err);
+      }
+    };
+
+    fetchUserWatchlist();
+  }, [isAuthenticated]);
 
   // Fetch movies based on Category or Search
   useEffect(() => {
@@ -105,6 +126,7 @@ const DiscoveryPage = () => {
       };
 
       await API.post('/watchlist', payload);
+      setWatchlistIds((prev) => new Set(prev).add(movie.id));
       setToast({
         message: `Added "${movie.title}" to your watchlist!`,
         type: 'success',
@@ -112,6 +134,32 @@ const DiscoveryPage = () => {
     } catch (err) {
       setToast({
         message: err.response?.data?.message || 'Could not add to watchlist',
+        type: 'error',
+      });
+    }
+  };
+
+  // Remove Movie from Watchlist (Toggle)
+  const handleRemoveFromWatchlist = async (movie) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await API.delete(`/watchlist/movie/${movie.id}`);
+      setWatchlistIds((prev) => {
+        const next = new Set(prev);
+        next.delete(movie.id);
+        return next;
+      });
+      setToast({
+        message: 'The Movie has been removed from watchlist',
+        type: 'error',
+      });
+    } catch (err) {
+      setToast({
+        message: err.response?.data?.message || 'Could not remove from watchlist',
         type: 'error',
       });
     }
@@ -291,7 +339,9 @@ const DiscoveryPage = () => {
             <MovieCard
               key={movie.id}
               movie={movie}
+              isInWatchlist={watchlistIds.has(movie.id)}
               onAddToWatchlist={handleAddToWatchlist}
+              onRemoveFromWatchlist={handleRemoveFromWatchlist}
             />
           ))}
         </div>

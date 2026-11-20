@@ -6,6 +6,8 @@ const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 const MovieCard = ({
   movie,
   onAddToWatchlist,
+  onRemoveFromWatchlist,
+  isInWatchlist = false,
   isWatchlistItem = false,
   onStatusChange,
   onDelete,
@@ -117,15 +119,34 @@ const MovieCard = ({
               Details
             </Link>
 
-            {onAddToWatchlist && (
+            {isInWatchlist ? (
               <button
                 type="button"
-                className="btn btn-primary btn-sm"
-                onClick={() => onAddToWatchlist(movie)}
-                title="Add to personal watchlist"
+                className="btn btn-sm"
+                style={{
+                  flex: 1,
+                  background: '#dc2626',
+                  borderColor: '#b91c1c',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                }}
+                onClick={() => onRemoveFromWatchlist && onRemoveFromWatchlist(movie)}
+                title="Remove from your watchlist"
               >
-                + Watchlist
+                Remove
               </button>
+            ) : (
+              onAddToWatchlist && (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  style={{ flex: 1 }}
+                  onClick={() => onAddToWatchlist(movie)}
+                  title="Add to personal watchlist"
+                >
+                  + Watchlist
+                </button>
+              )
             )}
           </div>
         )}

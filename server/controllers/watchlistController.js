@@ -178,6 +178,34 @@ const deleteFromWatchlist = async (req, res, next) => {
   }
 };
 
+// @desc    Delete a movie from watchlist by TMDB ID
+// @route   DELETE /api/watchlist/movie/:tmdbId
+// @access  Private
+const deleteByTmdbId = async (req, res, next) => {
+  try {
+    const { tmdbId } = req.params;
+
+    const item = await Watchlist.findOneAndDelete({
+      tmdbId: parseInt(tmdbId, 10),
+      userId: req.user._id,
+    });
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Movie not found in your watchlist.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'The Movie has been removed from watchlist',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get user reminders (upcoming & pending)
 // @route   GET /api/watchlist/reminders
 // @access  Private
@@ -249,6 +277,7 @@ module.exports = {
   addToWatchlist,
   updateWatchlistItem,
   deleteFromWatchlist,
+  deleteByTmdbId,
   getReminders,
   getDashboardStats,
 };
