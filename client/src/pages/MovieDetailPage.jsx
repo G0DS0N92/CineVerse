@@ -3,10 +3,20 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ReminderModal from '../components/ReminderModal';
+import TrailerModal from '../components/TrailerModal';
 import Toast from '../components/Toast';
 
 const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 const TMDB_POSTER_BASE = 'https://image.tmdb.org/t/p/w500';
+const TMDB_LOGO_BASE = 'https://image.tmdb.org/t/p/original';
+
+const COUNTRY_OPTIONS = [
+  { code: 'IN', label: 'India (IN)' },
+  { code: 'US', label: 'United States (US)' },
+  { code: 'GB', label: 'United Kingdom (UK)' },
+  { code: 'CA', label: 'Canada (CA)' },
+  { code: 'AU', label: 'Australia (AU)' },
+];
 
 const MovieDetailPage = () => {
   const { id } = useParams();
@@ -18,6 +28,15 @@ const MovieDetailPage = () => {
   const [isReminderOpen, setIsReminderOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
+
+  // Trailer states
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [isTrailerOpen, setIsTrailerOpen] = useState(false);
+
+  // Watch Providers states
+  const [watchProviders, setWatchProviders] = useState({});
+  const [selectedCountry, setSelectedCountry] = useState('IN');
+  const [providersLoading, setProvidersLoading] = useState(true);
 
   // Helper: Format release date strictly to DD/MM/YYYY
   const formatToDDMMYYYY = (dateStr) => {
@@ -32,20 +51,46 @@ const MovieDetailPage = () => {
   };
 
   useEffect(() => {
-    const fetchDetails = async () => {
+    const fetchDetailsAndExtras = async () => {
+      setLoading(true);
+      setProvidersLoading(true);
       try {
-        const { data } = await API.get(`/movies/${id}`);
-        if (data.success) {
-          setMovie(data.data);
+        const [detailsRes, videosRes, providersRes] = await Promise.allSettled([
+          API.get(`/movies/${id}`),
+          API.get(`/movies/${id}/videos`),
+          API.get(`/movies/${id}/watch-providers`),
+        ]);
+
+        if (detailsRes.status === 'fulfilled' && detailsRes.value.data.success) {
+          setMovie(detailsRes.value.data.data);
+        }
+
+        if (videosRes.status === 'fulfilled' && videosRes.value.data.success) {
+          const videos = videosRes.value.data.data || [];
+          if (videos.length > 0) {
+            setTrailerKey(videos[0].key);
+          } else {
+            setTrailerKey(null);
+          }
+        }
+
+        if (providersRes.status === 'fulfilled' && providersRes.value.data.success) {
+          const allResults = providersRes.value.data.data?.results || {};
+          setWatchProviders(allResults);
+          // If IN has no providers but US does, default selectedCountry to US
+          if (!allResults.IN && allResults.US) {
+            setSelectedCountry('US');
+          }
         }
       } catch (err) {
-        console.error('Error fetching movie details', err);
+        console.error('Error fetching movie data', err);
       } finally {
         setLoading(false);
+        setProvidersLoading(false);
       }
     };
 
-    fetchDetails();
+    fetchDetailsAndExtras();
   }, [id]);
 
   // Check if current movie is already in user's watchlist
@@ -339,10 +384,240 @@ const MovieDetailPage = () => {
               <button type="button" onClick={() => setIsReminderOpen(true)} className="btn btn-secondary" style={{ padding: '10px 22px' }}>
                 Schedule Reminder
               </button>
+
+              {trailerKey && (
+                <button
+                  type="button"
+                  onClick={() => setIsTrailerOpen(true)}
+                  className="btn"
+                  style={{
+                    padding: '10px 22px',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    background: 'linear-gradient(135deg, rgba(229, 9, 20, 0.25), rgba(229, 9, 20, 0.08))',
+                    color: '#ffffff',
+                    border: '1px solid rgba(229, 9, 20, 0.6)',
+                    boxShadow: '0 0 16px rgba(229, 9, 20, 0.25)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                  }}
+                  title="Watch official movie trailer preview"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  Watch Trailer
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Where to Watch / Streaming Providers Section */}
+      <div
+        style={{
+          marginTop: '32px',
+          background: 'var(--bg-card)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-color)',
+          padding: '28px 32px',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+            marginBottom: '24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            paddingBottom: '16px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(229, 9, 20, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#e50914',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
+                <polyline points="17 2 12 7 7 2" />
+              </svg>
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                Where to Watch
+              </h2>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Official streaming services, rentals, and digital purchases
+              </span>
+            </div>
+          </div>
+
+          {/* Country Selector */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label htmlFor="country-select" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              Region:
+            </label>
+            <select
+              id="country-select"
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+              className="form-control"
+              style={{
+                width: 'auto',
+                padding: '6px 14px',
+                fontSize: '0.85rem',
+                background: '#0d121d',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#ffffff',
+                borderRadius: '8px',
+              }}
+            >
+              {COUNTRY_OPTIONS.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.label} {watchProviders[c.code] ? '✓' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Provider Categories or Empty State */}
+        {(() => {
+          const currentData = watchProviders[selectedCountry];
+          if (providersLoading) {
+            return (
+              <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                Checking streaming availability...
+              </div>
+            );
+          }
+
+          if (!currentData || (!currentData.flatrate && !currentData.rent && !currentData.buy)) {
+            return (
+              <div
+                style={{
+                  padding: '32px 20px',
+                  textAlign: 'center',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  borderRadius: '12px',
+                  border: '1px dashed rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+                  No streaming or purchase options are currently reported for {COUNTRY_OPTIONS.find((c) => c.code === selectedCountry)?.label || selectedCountry}.
+                </p>
+                <p style={{ margin: '8px 0 0', color: 'var(--text-dim)', fontSize: '0.85rem' }}>
+                  Try selecting a different region above (such as United States) or check back closer to theatrical or digital distribution.
+                </p>
+              </div>
+            );
+          }
+
+          const categories = [
+            { key: 'flatrate', label: 'Stream (Subscription)', items: currentData.flatrate || [] },
+            { key: 'rent', label: 'Rent', items: currentData.rent || [] },
+            { key: 'buy', label: 'Buy', items: currentData.buy || [] },
+          ].filter((cat) => cat.items.length > 0);
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {categories.map((cat) => (
+                <div key={cat.key}>
+                  <h4
+                    style={{
+                      fontSize: '0.92rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.7px',
+                      color: '#e50914',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    {cat.label}
+                  </h4>
+                  <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                    {cat.items.map((provider) => (
+                      <div
+                        key={provider.provider_id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '8px 14px',
+                          background: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px solid rgba(255, 255, 255, 0.09)',
+                          borderRadius: '10px',
+                          transition: 'all 0.2s ease',
+                        }}
+                        title={provider.provider_name}
+                      >
+                        <img
+                          src={`${TMDB_LOGO_BASE}${provider.logo_path}`}
+                          alt={provider.provider_name}
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '8px',
+                            objectFit: 'cover',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+                          }}
+                        />
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f1f5f9' }}>
+                          {provider.provider_name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* JustWatch Link Attribution */}
+              {currentData.link && (
+                <div style={{ marginTop: '8px', textAlign: 'right' }}>
+                  <a
+                    href={currentData.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: '0.8rem',
+                      color: 'var(--text-dim)',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    Powered by JustWatch &rarr;
+                  </a>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* Trailer In-App Player Modal */}
+      <TrailerModal
+        isOpen={isTrailerOpen}
+        onClose={() => setIsTrailerOpen(false)}
+        videoKey={trailerKey}
+        movieTitle={movie.title}
+      />
 
       {/* Reminder Modal */}
       <ReminderModal

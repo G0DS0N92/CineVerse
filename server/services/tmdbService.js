@@ -252,6 +252,36 @@ const getGenres = async () => {
   }));
 };
 
+const getMovieVideos = async (movieId) => {
+  const data = await fetchFromTMDB(`/movie/${movieId}/videos`);
+  if (data && Array.isArray(data.results)) {
+    const youtubeVideos = data.results.filter((v) => v.site === 'YouTube' && v.key);
+    return youtubeVideos.sort((a, b) => {
+      const getPriority = (v) => {
+        let score = 0;
+        if (v.official) score += 10;
+        if (v.type === 'Trailer') score += 5;
+        else if (v.type === 'Teaser') score += 3;
+        else if (v.type === 'Clip') score += 1;
+        return score;
+      };
+      return getPriority(b) - getPriority(a);
+    });
+  }
+  return [];
+};
+
+const getMovieWatchProviders = async (movieId) => {
+  const data = await fetchFromTMDB(`/movie/${movieId}/watch/providers`);
+  if (data && data.results) {
+    return {
+      id: movieId,
+      results: data.results,
+    };
+  }
+  return { id: movieId, results: {} };
+};
+
 module.exports = {
   getTrending,
   getNowPlaying,
@@ -261,5 +291,7 @@ module.exports = {
   searchMovies,
   getMovieDetails,
   getGenres,
+  getMovieVideos,
+  getMovieWatchProviders,
   GENRE_MAP,
 };

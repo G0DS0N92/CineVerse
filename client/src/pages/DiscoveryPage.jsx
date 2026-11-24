@@ -36,9 +36,16 @@ const GENRES = [
   { id: 'all', name: 'All Genres' },
   { id: 28, name: 'Action' },
   { id: 12, name: 'Adventure' },
+  { id: 16, name: 'Animation' },
   { id: 35, name: 'Comedy' },
+  { id: 80, name: 'Crime' },
+  { id: 99, name: 'Documentary' },
   { id: 18, name: 'Drama' },
+  { id: 10751, name: 'Family' },
+  { id: 14, name: 'Fantasy' },
   { id: 27, name: 'Horror' },
+  { id: 9648, name: 'Mystery' },
+  { id: 10749, name: 'Romance' },
   { id: 878, name: 'Sci-Fi' },
   { id: 53, name: 'Thriller' },
 ];
@@ -348,7 +355,7 @@ const DiscoveryPage = () => {
         </div>
       </div>
 
-      {/* Filter and Sorting Bar */}
+      {/* Category and Sort Bar */}
       <div
         style={{
           display: 'flex',
@@ -356,7 +363,7 @@ const DiscoveryPage = () => {
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '16px',
-          marginBottom: '24px',
+          marginBottom: '18px',
         }}
       >
         {/* Category Buttons */}
@@ -373,39 +380,89 @@ const DiscoveryPage = () => {
             ))}
           </div>
           {!searchQuery && (
-            <p className="category-subtitle">
+            <p className="category-subtitle" style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>
               {CATEGORIES.find((c) => c.id === activeCategory)?.subtitle}
             </p>
           )}
         </div>
 
-        {/* Genre & Sort Controls */}
+        {/* Sort Controls */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <label htmlFor="sort-select" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            Sort:
+          </label>
           <select
+            id="sort-select"
             className="form-control"
-            style={{ width: 'auto', padding: '6px 12px', fontSize: '0.9rem' }}
-            value={selectedGenre}
-            onChange={(e) => setSelectedGenre(e.target.value)}
-          >
-            {GENRES.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className="form-control"
-            style={{ width: 'auto', padding: '6px 12px', fontSize: '0.9rem' }}
+            style={{ width: 'auto', padding: '6px 14px', fontSize: '0.88rem' }}
             value={sortBy}
             onChange={(e) => handleSortChange(e.target.value)}
           >
-            <option value="popularity">Sort by: Popularity</option>
-            <option value="rating">Sort by: Rating (High to Low)</option>
-            <option value="releaseDate">Sort by: Release Date</option>
-            <option value="title">Sort by: Title (A-Z)</option>
+            <option value="popularity">Popularity</option>
+            <option value="rating">Rating (High to Low)</option>
+            <option value="releaseDate">Release Date</option>
+            <option value="title">Title (A-Z)</option>
           </select>
         </div>
+      </div>
+
+      {/* Quick-Filter Genre Pills Bar */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center',
+          overflowX: 'auto',
+          paddingBottom: '10px',
+          marginBottom: '26px',
+          scrollbarWidth: 'thin',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            color: 'var(--text-dim)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            marginRight: '4px',
+            flexShrink: 0,
+          }}
+        >
+          Genre:
+        </span>
+        {GENRES.map((g) => {
+          const isSelected = String(selectedGenre) === String(g.id);
+          return (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => setSelectedGenre(String(g.id))}
+              style={{
+                flexShrink: 0,
+                padding: '6px 14px',
+                borderRadius: '20px',
+                fontSize: '0.82rem',
+                fontWeight: isSelected ? 700 : 500,
+                background: isSelected
+                  ? '#e50914'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                border: isSelected
+                  ? '1px solid #e50914'
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: isSelected
+                  ? '0 0 12px rgba(229, 9, 20, 0.45)'
+                  : 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                outline: 'none',
+              }}
+            >
+              {g.name}
+            </button>
+          );
+        })}
       </div>
 
       {/* Movies Grid */}

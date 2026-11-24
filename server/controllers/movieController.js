@@ -107,6 +107,32 @@ const getGenres = async (req, res, next) => {
   }
 };
 
+// @desc    Get movie videos/trailers
+// @route   GET /api/movies/:id/videos
+// @access  Public
+const getMovieVideos = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const videos = await tmdbService.getMovieVideos(id);
+    res.status(200).json({ success: true, count: videos.length, data: videos });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get movie watch/streaming providers
+// @route   GET /api/movies/:id/watch-providers
+// @access  Public
+const getMovieWatchProviders = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const providers = await tmdbService.getMovieWatchProviders(id);
+    res.status(200).json({ success: true, data: providers });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getTrending,
   getNowPlaying,
@@ -116,4 +142,6 @@ module.exports = {
   searchMovies,
   getMovieDetails,
   getGenres,
+  getMovieVideos,
+  getMovieWatchProviders,
 };
