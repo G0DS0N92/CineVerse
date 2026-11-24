@@ -4,6 +4,7 @@ import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ReminderModal from '../components/ReminderModal';
 import TrailerModal from '../components/TrailerModal';
+import StreamingProviderBadge from '../components/StreamingProviderBadge';
 import Toast from '../components/Toast';
 
 const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
@@ -552,54 +553,54 @@ const MovieDetailPage = () => {
                   </h4>
                   <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
                     {cat.items.map((provider) => (
-                      <div
-                        key={provider.provider_id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '8px 14px',
-                          background: 'rgba(255, 255, 255, 0.04)',
-                          border: '1px solid rgba(255, 255, 255, 0.09)',
-                          borderRadius: '10px',
-                          transition: 'all 0.2s ease',
-                        }}
-                        title={provider.provider_name}
-                      >
-                        <img
-                          src={`${TMDB_LOGO_BASE}${provider.logo_path}`}
-                          alt={provider.provider_name}
-                          style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '8px',
-                            objectFit: 'cover',
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
-                          }}
-                        />
-                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f1f5f9' }}>
-                          {provider.provider_name}
-                        </span>
-                      </div>
+                      <StreamingProviderBadge
+                        key={`${cat.key}-${provider.provider_id}`}
+                        provider={provider}
+                        movieTitle={movie.title}
+                        categoryType={cat.key}
+                        countryCode={selectedCountry}
+                        justWatchLink={currentData.link}
+                      />
                     ))}
                   </div>
                 </div>
               ))}
 
-              {/* JustWatch Link Attribution */}
+              {/* JustWatch Link Attribution & Instructions */}
               {currentData.link && (
-                <div style={{ marginTop: '8px', textAlign: 'right' }}>
+                <div
+                  style={{
+                    marginTop: '12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                    paddingTop: '14px',
+                  }}
+                >
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="16" x2="12" y2="12" />
+                      <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
+                    Click any service above to search or watch directly on that platform.
+                  </span>
+
                   <a
                     href={currentData.link}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      fontSize: '0.8rem',
-                      color: 'var(--text-dim)',
+                      fontSize: '0.84rem',
+                      color: '#e50914',
                       textDecoration: 'none',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px',
+                      fontWeight: 600,
                     }}
                   >
                     Powered by JustWatch &rarr;
