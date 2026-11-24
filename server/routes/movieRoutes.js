@@ -11,6 +11,8 @@ const {
   getGenres,
   getMovieVideos,
   getMovieWatchProviders,
+  getMovieCredits,
+  getMovieRecommendations,
 } = require('../controllers/movieController');
 
 router.get('/trending', getTrending);
@@ -22,6 +24,8 @@ router.get('/search', searchMovies);
 router.get('/genres', getGenres);
 router.get('/:id/videos', getMovieVideos);
 router.get('/:id/watch-providers', getMovieWatchProviders);
+router.get('/:id/credits', getMovieCredits);
+router.get('/:id/recommendations', getMovieRecommendations);
 router.get('/:id', getMovieDetails);
 
 module.exports = router;

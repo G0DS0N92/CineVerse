@@ -282,6 +282,47 @@ const getMovieWatchProviders = async (movieId) => {
   return { id: movieId, results: {} };
 };
 
+const getMovieCredits = async (movieId) => {
+  const data = await fetchFromTMDB(`/movie/${movieId}/credits`);
+  if (data) {
+    const cast = (data.cast || []).slice(0, 15).map((person) => ({
+      id: person.id,
+      name: person.name,
+      character: person.character,
+      profile_path: person.profile_path,
+      order: person.order,
+    }));
+
+    const directors = (data.crew || [])
+      .filter((person) => person.job === 'Director')
+      .map((person) => ({
+        id: person.id,
+        name: person.name,
+        job: person.job,
+        profile_path: person.profile_path,
+      }));
+
+    return {
+      id: movieId,
+      cast,
+      directors,
+      director: directors[0] || null,
+    };
+  }
+  return { id: movieId, cast: [], directors: [], director: null };
+};
+
+const getMovieRecommendations = async (movieId) => {
+  let data = await fetchFromTMDB(`/movie/${movieId}/recommendations`);
+  if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+    data = await fetchFromTMDB(`/movie/${movieId}/similar`);
+  }
+  if (data && Array.isArray(data.results)) {
+    return data.results.filter((m) => m.poster_path || m.backdrop_path).slice(0, 12);
+  }
+  return [];
+};
+
 module.exports = {
   getTrending,
   getNowPlaying,
@@ -293,5 +334,7 @@ module.exports = {
   getGenres,
   getMovieVideos,
   getMovieWatchProviders,
+  getMovieCredits,
+  getMovieRecommendations,
   GENRE_MAP,
 };

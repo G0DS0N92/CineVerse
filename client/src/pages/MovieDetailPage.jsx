@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import ReminderModal from '../components/ReminderModal';
 import TrailerModal from '../components/TrailerModal';
 import StreamingProviderBadge from '../components/StreamingProviderBadge';
+import MovieCard from '../components/MovieCard';
 import Toast from '../components/Toast';
 
 const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
@@ -41,6 +42,17 @@ const MovieDetailPage = () => {
   const [regionDropdownOpen, setRegionDropdownOpen] = useState(false);
   const regionDropdownRef = useRef(null);
 
+  // Cast & Director states
+  const [credits, setCredits] = useState({ cast: [], directors: [], director: null });
+  // Recommended movies states
+  const [recommendations, setRecommendations] = useState([]);
+  const [watchlistIds, setWatchlistIds] = useState(new Set());
+
+  // Scroll to top whenever movie ID changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [id]);
+
   // Close region dropdown on click outside
   useEffect(() => {
     if (!regionDropdownOpen) return;
@@ -70,10 +82,12 @@ const MovieDetailPage = () => {
       setLoading(true);
       setProvidersLoading(true);
       try {
-        const [detailsRes, videosRes, providersRes] = await Promise.allSettled([
+        const [detailsRes, videosRes, providersRes, creditsRes, recsRes] = await Promise.allSettled([
           API.get(`/movies/${id}`),
           API.get(`/movies/${id}/videos`),
           API.get(`/movies/${id}/watch-providers`),
+          API.get(`/movies/${id}/credits`),
+          API.get(`/movies/${id}/recommendations`),
         ]);
 
         if (detailsRes.status === 'fulfilled' && detailsRes.value.data.success) {
@@ -97,6 +111,18 @@ const MovieDetailPage = () => {
             setSelectedCountry('US');
           }
         }
+
+        if (creditsRes.status === 'fulfilled' && creditsRes.value.data.success) {
+          setCredits(creditsRes.value.data.data);
+        } else {
+          setCredits({ cast: [], directors: [], director: null });
+        }
+
+        if (recsRes.status === 'fulfilled' && recsRes.value.data.success) {
+          setRecommendations(recsRes.value.data.data || []);
+        } else {
+          setRecommendations([]);
+        }
       } catch (err) {
         console.error('Error fetching movie data', err);
       } finally {
@@ -111,12 +137,18 @@ const MovieDetailPage = () => {
   // Check if current movie is already in user's watchlist
   useEffect(() => {
     const checkWatchlistStatus = async () => {
-      if (!isAuthenticated || !movie) return;
+      if (!isAuthenticated) {
+        setWatchlistIds(new Set());
+        setIsInWatchlist(false);
+        return;
+      }
       try {
         const { data } = await API.get('/watchlist');
         if (data.success && Array.isArray(data.data)) {
-          const exists = data.data.some((item) => item.tmdbId === movie.id);
-          setIsInWatchlist(exists);
+          const idSet = new Set(data.data.map((item) => item.tmdbId));
+          setWatchlistIds(idSet);
+          const currentTmdbId = movie?.id || Number(id);
+          setIsInWatchlist(idSet.has(currentTmdbId));
         }
       } catch (err) {
         console.error('Failed to check watchlist status', err);
@@ -124,7 +156,68 @@ const MovieDetailPage = () => {
     };
 
     checkWatchlistStatus();
-  }, [movie, isAuthenticated]);
+  }, [movie, isAuthenticated, id]);
+
+  // Add Recommended Movie to Watchlist
+  const handleRecAddToWatchlist = async (recMovie) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const payload = {
+        tmdbId: recMovie.id,
+        title: recMovie.title,
+        posterPath: recMovie.poster_path,
+        backdropPath: recMovie.backdrop_path,
+        overview: recMovie.overview,
+        releaseDate: recMovie.release_date,
+        voteAverage: recMovie.vote_average,
+        genres: recMovie.genre_ids ? recMovie.genre_ids.map(String) : [],
+        status: 'Planned to Watch',
+        adult: recMovie.adult === true,
+      };
+
+      await API.post('/watchlist', payload);
+      setWatchlistIds((prev) => new Set(prev).add(recMovie.id));
+      setToast({
+        message: `Added "${recMovie.title}" to your watchlist!`,
+        type: 'success',
+      });
+    } catch (err) {
+      setToast({
+        message: err.response?.data?.message || 'Could not add to watchlist',
+        type: 'error',
+      });
+    }
+  };
+
+  // Remove Recommended Movie from Watchlist
+  const handleRecRemoveFromWatchlist = async (recMovie) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await API.delete(`/watchlist/movie/${recMovie.id}`);
+      setWatchlistIds((prev) => {
+        const next = new Set(prev);
+        next.delete(recMovie.id);
+        return next;
+      });
+      setToast({
+        message: 'The Movie has been removed from watchlist',
+        type: 'error',
+      });
+    } catch (err) {
+      setToast({
+        message: err.response?.data?.message || 'Could not remove from watchlist',
+        type: 'error',
+      });
+    }
+  };
 
   const handleAddWatchlist = async () => {
     if (!isAuthenticated) {
@@ -838,6 +931,279 @@ const MovieDetailPage = () => {
           );
         })()}
       </div>
+
+      {/* Cast & Director Showcase Section */}
+      {((credits.cast && credits.cast.length > 0) || credits.director) && (
+        <div
+          style={{
+            marginTop: '32px',
+            background: 'var(--bg-card)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-color)',
+            padding: '28px 32px',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '16px',
+              marginBottom: '20px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+              paddingBottom: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  background: 'rgba(229, 9, 20, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#e50914',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                  Cast & Director
+                </h2>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Top billing cast members and directing crew
+                </span>
+              </div>
+            </div>
+
+            {/* Director Badge */}
+            {credits.director && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '6px 14px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(229, 9, 20, 0.35)',
+                }}
+              >
+                {credits.director.profile_path ? (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w185${credits.director.profile_path}`}
+                    alt={credits.director.name}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '1px solid rgba(229, 9, 20, 0.5)',
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      background: '#1e293b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      color: '#ffffff',
+                    }}
+                  >
+                    DIR
+                  </div>
+                )}
+                <div>
+                  <span
+                    style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.6px',
+                      color: '#e50914',
+                      display: 'block',
+                    }}
+                  >
+                    Director
+                  </span>
+                  <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#ffffff' }}>
+                    {credits.director.name}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cast Horizontal Scroll Strip */}
+          {credits.cast && credits.cast.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                gap: '16px',
+                overflowX: 'auto',
+                paddingBottom: '12px',
+                scrollbarWidth: 'thin',
+              }}
+            >
+              {credits.cast.map((actor) => (
+                <div
+                  key={actor.id}
+                  style={{
+                    flex: '0 0 135px',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s ease, border-color 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.borderColor = 'rgba(229, 9, 20, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  }}
+                >
+                  <div style={{ width: '100%', height: '165px', background: '#111827', position: 'relative' }}>
+                    {actor.profile_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                        alt={actor.name}
+                        loading="lazy"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexDirection: 'column',
+                          color: 'var(--text-dim)',
+                          gap: '6px',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <span>No Photo</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ padding: '10px 10px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <span
+                      style={{
+                        fontSize: '0.86rem',
+                        fontWeight: 700,
+                        color: '#f1f5f9',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                      title={actor.name}
+                    >
+                      {actor.name}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-muted)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                      title={actor.character}
+                    >
+                      {actor.character || 'Cast'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* More Like This (Recommended Movies) Section */}
+      {recommendations && recommendations.length > 0 && (
+        <div style={{ marginTop: '36px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(229, 9, 20, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#e50914',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <line x1="2" y1="7" x2="7" y2="7" />
+                <line x1="2" y1="17" x2="7" y2="17" />
+                <line x1="17" y1="17" x2="22" y2="17" />
+                <line x1="17" y1="7" x2="22" y2="7" />
+              </svg>
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                More Like This
+              </h2>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Handpicked titles with similar tone, themes, and genre
+              </span>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(175px, 1fr))',
+              gap: '18px',
+            }}
+          >
+            {recommendations.slice(0, 12).map((recMovie) => (
+              <MovieCard
+                key={recMovie.id}
+                movie={recMovie}
+                isInWatchlist={watchlistIds.has(recMovie.id)}
+                onAddToWatchlist={() => handleRecAddToWatchlist(recMovie)}
+                onRemoveFromWatchlist={() => handleRecRemoveFromWatchlist(recMovie)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Trailer In-App Player Modal */}
       <TrailerModal

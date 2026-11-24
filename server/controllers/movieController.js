@@ -133,6 +133,32 @@ const getMovieWatchProviders = async (req, res, next) => {
   }
 };
 
+// @desc    Get movie credits (cast & directors)
+// @route   GET /api/movies/:id/credits
+// @access  Public
+const getMovieCredits = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const credits = await tmdbService.getMovieCredits(id);
+    res.status(200).json({ success: true, data: credits });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get recommended movies
+// @route   GET /api/movies/:id/recommendations
+// @access  Public
+const getMovieRecommendations = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const recommendations = await tmdbService.getMovieRecommendations(id);
+    res.status(200).json({ success: true, count: recommendations.length, data: recommendations });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getTrending,
   getNowPlaying,
@@ -144,4 +170,6 @@ module.exports = {
   getGenres,
   getMovieVideos,
   getMovieWatchProviders,
+  getMovieCredits,
+  getMovieRecommendations,
 };
