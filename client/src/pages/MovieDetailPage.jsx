@@ -1054,12 +1054,11 @@ const MovieDetailPage = () => {
           {/* Cast Horizontal Scroll Strip */}
           {credits.cast && credits.cast.length > 0 && (
             <div
+              className="cinema-horizontal-scroll"
               style={{
                 display: 'flex',
                 gap: '16px',
-                overflowX: 'auto',
-                paddingBottom: '12px',
-                scrollbarWidth: 'thin',
+                paddingBottom: '14px',
               }}
             >
               {credits.cast.map((actor) => (

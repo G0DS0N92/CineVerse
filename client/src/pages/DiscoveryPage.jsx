@@ -423,14 +423,13 @@ const DiscoveryPage = () => {
 
       {/* Quick-Filter Genre Pills Bar */}
       <div
+        className="cinema-horizontal-scroll"
         style={{
           display: 'flex',
           gap: '8px',
           alignItems: 'center',
-          overflowX: 'auto',
-          paddingBottom: '10px',
+          paddingBottom: '12px',
           marginBottom: '26px',
-          scrollbarWidth: 'thin',
         }}
       >
         <span

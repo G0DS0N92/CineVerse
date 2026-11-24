@@ -374,13 +374,13 @@ const RemindersPage = () => {
 
       {/* Filter Tabs */}
       <div
+        className="cinema-horizontal-scroll"
         style={{
           display: 'flex',
           gap: '8px',
           marginBottom: '24px',
           borderBottom: '1px solid var(--border-color)',
           paddingBottom: '12px',
-          overflowX: 'auto',
         }}
       >
         <button

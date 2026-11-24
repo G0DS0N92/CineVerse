@@ -42,6 +42,78 @@
   padding: 0;
 }
 
+/* ========================================================
+   GLOBAL CUSTOM CINEMATIC SCROLLBARS (RED & BLACK THEME)
+   ======================================================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(229, 9, 20, 0.45) rgba(15, 21, 34, 0.7);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(11, 15, 25, 0.85);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(229, 9, 20, 0.4);
+  border-radius: 9999px;
+  border: 1px solid rgba(229, 9, 20, 0.2);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e50914;
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.7);
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dedicated Themed Horizontal Scroll Strip */
+.cinema-horizontal-scroll {
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(229, 9, 20, 0.5) rgba(255, 255, 255, 0.05);
+}
+
+.cinema-horizontal-scroll::-webkit-scrollbar {
+  height: 6px !important;
+}
+
+.cinema-horizontal-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-radius: 9999px !important;
+  margin: 0 4px !important;
+}
+
+.cinema-horizontal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(229, 9, 20, 0.45) !important;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(229, 9, 20, 0.3) !important;
+  transition: background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.cinema-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #e50914 !important;
+  box-shadow: 0 0 12px rgba(229, 9, 20, 0.8) !important;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-primary);
