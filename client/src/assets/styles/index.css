@@ -1346,14 +1346,11 @@ select.form-control option {
   background: var(--accent-primary);
   box-shadow: 0 0 8px rgba(229, 9, 20, 0.9);
   width: 0%;
-}
-
-.hero-dot-fill.running {
   animation: heroDotProgress 5.5s linear forwards;
 }
 
 .hero-dot-fill.paused {
-  animation-play-state: paused;
+  animation-play-state: paused !important;
 }
 
 @keyframes heroDotProgress {

@@ -176,16 +176,6 @@ const HomePage = () => {
     fetchUserWatchlist();
   }, [isAuthenticated]);
 
-  // Auto-advance slideshow every 5.5 seconds unless paused on hover
-  useEffect(() => {
-    if (isPaused || upcomingSlides.length === 0) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % upcomingSlides.length);
-    }, 5500);
-
-    return () => clearInterval(interval);
-  }, [isPaused, upcomingSlides.length, currentSlide]);
-
   const handlePrevSlide = () => {
     setCurrentSlide((prev) => (prev === 0 ? upcomingSlides.length - 1 : prev - 1));
   };
@@ -504,7 +494,8 @@ const HomePage = () => {
                 {isActive && (
                   <span
                     key={`dot-fill-${currentSlide}`}
-                    className={`hero-dot-fill ${isPaused ? 'paused' : 'running'}`}
+                    className={`hero-dot-fill ${isPaused ? 'paused' : ''}`}
+                    onAnimationEnd={handleNextSlide}
                   />
                 )}
               </button>

@@ -596,7 +596,8 @@ const MovieDetailPage = () => {
                     position: 'absolute',
                     top: 'calc(100% + 6px)',
                     right: 0,
-                    minWidth: '220px',
+                    minWidth: '290px',
+                    width: 'max-content',
                     background: 'linear-gradient(145deg, #131a28 0%, #0a0e17 100%)',
                     border: '1px solid rgba(229, 9, 20, 0.45)',
                     borderRadius: '12px',
@@ -621,6 +622,7 @@ const MovieDetailPage = () => {
                       letterSpacing: '0.6px',
                       borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
                       marginBottom: '2px',
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     Select Streaming Region
@@ -641,6 +643,7 @@ const MovieDetailPage = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
+                          gap: '18px',
                           padding: '9px 12px',
                           borderRadius: '8px',
                           fontSize: '0.85rem',
@@ -652,6 +655,7 @@ const MovieDetailPage = () => {
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
                           border: isSelected ? '1px solid rgba(229, 9, 20, 0.4)' : '1px solid transparent',
+                          whiteSpace: 'nowrap',
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected) {
@@ -666,7 +670,7 @@ const MovieDetailPage = () => {
                           }
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', whiteSpace: 'nowrap' }}>
                           <span
                             style={{
                               background: isSelected ? '#e50914' : 'rgba(255, 255, 255, 0.08)',
@@ -676,14 +680,15 @@ const MovieDetailPage = () => {
                               fontSize: '0.72rem',
                               fontWeight: 800,
                               letterSpacing: '0.5px',
+                              flexShrink: 0,
                             }}
                           >
                             {c.code}
                           </span>
-                          <span>{c.name}</span>
+                          <span style={{ whiteSpace: 'nowrap' }}>{c.name}</span>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                           {hasData ? (
                             <span
                               style={{
@@ -693,18 +698,19 @@ const MovieDetailPage = () => {
                                 padding: '2px 6px',
                                 borderRadius: '4px',
                                 fontWeight: 600,
+                                whiteSpace: 'nowrap',
                               }}
                             >
                               Available
                             </span>
                           ) : (
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
                               No info
                             </span>
                           )}
 
                           {isSelected && (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e50914" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e50914" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                           )}
