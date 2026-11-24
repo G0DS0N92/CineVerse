@@ -354,39 +354,7 @@ const MovieDetailPage = () => {
 
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {isInWatchlist ? (
-                <button
-                  type="button"
-                  onClick={handleRemoveWatchlist}
-                  className="btn btn-sm"
-                  style={{
-                    background: '#dc2626',
-                    borderColor: '#b91c1c',
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    padding: '10px 22px',
-                    fontSize: '0.95rem',
-                  }}
-                  title="Remove this movie from your watchlist"
-                >
-                  Remove from Watchlist
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleAddWatchlist}
-                  className="btn btn-primary"
-                  style={{ padding: '10px 22px', fontSize: '0.95rem' }}
-                >
-                  + Add to Watchlist
-                </button>
-              )}
-
-              <button type="button" onClick={() => setIsReminderOpen(true)} className="btn btn-secondary" style={{ padding: '10px 22px' }}>
-                Schedule Reminder
-              </button>
-
-              {trailerKey && (
+              {trailerKey ? (
                 <button
                   type="button"
                   onClick={() => setIsTrailerOpen(true)}
@@ -411,7 +379,65 @@ const MovieDetailPage = () => {
                   </svg>
                   Watch Trailer
                 </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsTrailerOpen(true)}
+                  className="btn btn-secondary"
+                  style={{
+                    padding: '10px 22px',
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                    opacity: 0.7,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                  title="Check trailer preview"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  Watch Trailer
+                </button>
               )}
+
+              {isInWatchlist ? (
+                <button
+                  type="button"
+                  onClick={handleRemoveWatchlist}
+                  className="btn btn-sm"
+                  style={{
+                    background: '#dc2626',
+                    borderColor: '#b91c1c',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    padding: '10px 22px',
+                    fontSize: '0.95rem',
+                  }}
+                  title="Remove this movie from your watchlist"
+                >
+                  Remove from Watchlist
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleAddWatchlist}
+                  className="btn btn-primary"
+                  style={{ padding: '10px 22px', fontSize: '0.95rem' }}
+                >
+                  Add to Watchlist
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setIsReminderOpen(true)}
+                className="btn btn-secondary"
+                style={{ padding: '10px 22px' }}
+              >
+                Schedule Reminder
+              </button>
             </div>
           </div>
         </div>
