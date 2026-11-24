@@ -79,6 +79,13 @@ const DiscoveryPage = () => {
   const observerTarget = React.useRef(null);
   const isFetchingRef = React.useRef(false);
   const pageRef = React.useRef(1);
+  const activeCategoryRef = React.useRef(activeCategory);
+  const searchQueryRef = React.useRef(searchQuery);
+
+  useEffect(() => {
+    activeCategoryRef.current = activeCategory;
+    searchQueryRef.current = searchQuery;
+  }, [activeCategory, searchQuery]);
 
   // Load user's saved watchlist IDs to show live toggle state (+ Watchlist vs Remove)
   useEffect(() => {
@@ -160,13 +167,21 @@ const DiscoveryPage = () => {
 
     const nextPage = pageRef.current + 1;
 
+    const targetCategory = activeCategoryRef.current;
+    const targetSearch = searchQueryRef.current.trim();
+
     try {
       const endpoint =
-        searchQuery.trim().length > 1
-          ? `/movies/search?query=${encodeURIComponent(searchQuery.trim())}&page=${nextPage}`
-          : `/movies/${activeCategory}?page=${nextPage}`;
+        targetSearch.length > 1
+          ? `/movies/search?query=${encodeURIComponent(targetSearch)}&page=${nextPage}`
+          : `/movies/${targetCategory}?page=${nextPage}`;
 
       const { data } = await API.get(endpoint);
+
+      // Verify user has not switched categories or search query while request was in-flight
+      if (activeCategoryRef.current !== targetCategory || searchQueryRef.current.trim() !== targetSearch) {
+        return;
+      }
       if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         setMovies((prev) => {
           const seen = new Set(prev.map((m) => m.id));

@@ -54,8 +54,8 @@ const addToWatchlist = async (req, res, next) => {
     }
 
     // Age restriction enforcement: Underage users (< 18) cannot add adult / 18+ content
-    const userAge = req.user.age;
-    if (userAge !== null && userAge !== undefined && userAge < 18) {
+    const parsedAge = Number(req.user.age);
+    if (!Number.isNaN(parsedAge) && parsedAge > 0 && parsedAge < 18) {
       let isRestricted = false;
       let certName = certification || '';
 

@@ -30,10 +30,17 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(async (req, res, next) => {
   try {
     await connectDB();
+    next();
   } catch (err) {
     console.error('Database connection error in middleware:', err.message);
+    if (req.path.startsWith('/api/auth') || req.path.startsWith('/api/watchlist')) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database service is temporarily unavailable. Please retry in a few moments.',
+      });
+    }
+    next();
   }
-  next();
 });
 
 // Health Check Route

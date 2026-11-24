@@ -147,7 +147,7 @@ const MovieDetailPage = () => {
         if (data.success && Array.isArray(data.data)) {
           const idSet = new Set(data.data.map((item) => item.tmdbId));
           setWatchlistIds(idSet);
-          const currentTmdbId = movie?.id || Number(id);
+          const currentTmdbId = Number(id) || movie?.id;
           setIsInWatchlist(idSet.has(currentTmdbId));
         }
       } catch (err) {
