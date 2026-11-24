@@ -557,21 +557,14 @@ def build_pdf(filename):
     doc.build(story, canvasmaker=NumberedCanvas)
     print(f"Successfully generated: {filename}")
 
-    # Copy to artifacts directory and root CineVerse.pdf
+    # Copy to artifacts directory
     artifact_path = r"C:\Users\Admin\.gemini\antigravity\brain\b0c9d3c1-32f3-41ed-9956-7c3479c081d1\CineVerse_Project_Documentation.pdf"
-    root_pdf_path = r"d:\Internship Project\CineVerse.pdf"
     
     try:
         shutil.copyfile(filename, artifact_path)
         print(f"Copied to artifact: {artifact_path}")
     except Exception as e:
         print(f"Warning: Could not copy to artifact path: {e}")
-
-    try:
-        shutil.copyfile(filename, root_pdf_path)
-        print(f"Copied to root PDF: {root_pdf_path}")
-    except Exception as e:
-        print(f"Warning: Could not copy to root PDF path: {e}")
 
 
 if __name__ == '__main__':
