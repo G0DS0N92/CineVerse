@@ -50,6 +50,13 @@ const GENRES = [
   { id: 53, name: 'Thriller' },
 ];
 
+const SORT_OPTIONS = [
+  { value: 'popularity', label: 'Popularity' },
+  { value: 'rating', label: 'Rating (High to Low)' },
+  { value: 'releaseDate', label: 'Release Date' },
+  { value: 'title', label: 'Title (A-Z)' },
+];
+
 const DiscoveryPage = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -74,6 +81,8 @@ const DiscoveryPage = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState('popularity');
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const sortDropdownRef = React.useRef(null);
   const [toast, setToast] = useState(null);
   const [watchlistIds, setWatchlistIds] = useState(new Set());
   const observerTarget = React.useRef(null);
@@ -86,6 +95,18 @@ const DiscoveryPage = () => {
     activeCategoryRef.current = activeCategory;
     searchQueryRef.current = searchQuery;
   }, [activeCategory, searchQuery]);
+
+  // Close sort dropdown on click outside
+  useEffect(() => {
+    if (!sortDropdownOpen) return;
+    const handleClickOutside = (e) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+        setSortDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sortDropdownOpen]);
 
   // Load user's saved watchlist IDs to show live toggle state (+ Watchlist vs Remove)
   useEffect(() => {
@@ -401,23 +422,156 @@ const DiscoveryPage = () => {
           )}
         </div>
 
-        {/* Sort Controls */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <label htmlFor="sort-select" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+        {/* Sort Controls (Themed Custom Dropdown) */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
             Sort:
-          </label>
-          <select
-            id="sort-select"
-            className="form-control"
-            style={{ width: 'auto', padding: '6px 14px', fontSize: '0.88rem' }}
-            value={sortBy}
-            onChange={(e) => handleSortChange(e.target.value)}
-          >
-            <option value="popularity">Popularity</option>
-            <option value="rating">Rating (High to Low)</option>
-            <option value="releaseDate">Release Date</option>
-            <option value="title">Title (A-Z)</option>
-          </select>
+          </span>
+          <div ref={sortDropdownRef} style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onClick={() => setSortDropdownOpen((prev) => !prev)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                background: 'linear-gradient(135deg, rgba(19, 26, 40, 0.95), rgba(10, 14, 23, 0.95))',
+                border: sortDropdownOpen ? '1px solid #e50914' : '1px solid rgba(255, 255, 255, 0.12)',
+                boxShadow: sortDropdownOpen ? '0 0 14px rgba(229, 9, 20, 0.4)' : 'none',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                color: '#ffffff',
+                fontSize: '0.86rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                minWidth: '150px',
+                justifyContent: 'space-between',
+                outline: 'none',
+              }}
+              title="Select Sort Order"
+            >
+              <span>{SORT_OPTIONS.find((s) => s.value === sortBy)?.label || 'Popularity'}</span>
+
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transform: sortDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease',
+                  color: sortDropdownOpen ? '#e50914' : 'var(--text-muted)',
+                }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            {/* Floating Menu Popover */}
+            {sortDropdownOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  right: 0,
+                  minWidth: '210px',
+                  width: 'max-content',
+                  background: 'linear-gradient(145deg, #131a28 0%, #0a0e17 100%)',
+                  border: '1px solid rgba(229, 9, 20, 0.45)',
+                  borderRadius: '12px',
+                  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(229, 9, 20, 0.25)',
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  zIndex: 200,
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  animation: 'fadeIn 0.15s ease-out',
+                }}
+              >
+                <div
+                  style={{
+                    padding: '6px 10px 4px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    color: 'var(--text-dim)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.6px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                    marginBottom: '2px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Select Sort Order
+                </div>
+
+                {SORT_OPTIONS.map((opt) => {
+                  const isSelected = sortBy === opt.value;
+                  return (
+                    <div
+                      key={opt.value}
+                      onClick={() => {
+                        handleSortChange(opt.value);
+                        setSortDropdownOpen(false);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '14px',
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        fontWeight: isSelected ? 700 : 500,
+                        color: isSelected ? '#ffffff' : '#cbd5e1',
+                        background: isSelected
+                          ? 'linear-gradient(90deg, rgba(229, 9, 20, 0.22), rgba(229, 9, 20, 0.08))'
+                          : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        border: isSelected ? '1px solid rgba(229, 9, 20, 0.4)' : '1px solid transparent',
+                        whiteSpace: 'nowrap',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                          e.currentTarget.style.color = '#ffffff';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#cbd5e1';
+                        }
+                      }}
+                    >
+                      <span>{opt.label}</span>
+                      {isSelected && (
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#e50914"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
