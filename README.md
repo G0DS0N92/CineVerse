@@ -140,7 +140,6 @@ cineverse/
 │   ├── server.js                           # Express application entry with fail-fast DB middleware
 │   └── vercel.json                         # Serverless configuration and security headers
 │
-├── CineVerse_Project_Documentation.pdf     # Canonical 7-page technical architecture PDF document
 ├── generate_pdf.py                         # ReportLab compilation script for technical documentation
 └── README.md                               # Project documentation
 ```
