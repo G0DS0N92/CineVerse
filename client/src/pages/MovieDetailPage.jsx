@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -12,11 +12,11 @@ const TMDB_POSTER_BASE = 'https://image.tmdb.org/t/p/w500';
 const TMDB_LOGO_BASE = 'https://image.tmdb.org/t/p/original';
 
 const COUNTRY_OPTIONS = [
-  { code: 'IN', label: 'India (IN)' },
-  { code: 'US', label: 'United States (US)' },
-  { code: 'GB', label: 'United Kingdom (UK)' },
-  { code: 'CA', label: 'Canada (CA)' },
-  { code: 'AU', label: 'Australia (AU)' },
+  { code: 'IN', name: 'India', label: 'India (IN)' },
+  { code: 'US', name: 'United States', label: 'United States (US)' },
+  { code: 'GB', name: 'United Kingdom', label: 'United Kingdom (UK)' },
+  { code: 'CA', name: 'Canada', label: 'Canada (CA)' },
+  { code: 'AU', name: 'Australia', label: 'Australia (AU)' },
 ];
 
 const MovieDetailPage = () => {
@@ -38,6 +38,20 @@ const MovieDetailPage = () => {
   const [watchProviders, setWatchProviders] = useState({});
   const [selectedCountry, setSelectedCountry] = useState('IN');
   const [providersLoading, setProvidersLoading] = useState(true);
+  const [regionDropdownOpen, setRegionDropdownOpen] = useState(false);
+  const regionDropdownRef = useRef(null);
+
+  // Close region dropdown on click outside
+  useEffect(() => {
+    if (!regionDropdownOpen) return;
+    const handleClickOutside = (e) => {
+      if (regionDropdownRef.current && !regionDropdownRef.current.contains(e.target)) {
+        setRegionDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [regionDropdownOpen]);
 
   // Helper: Format release date strictly to DD/MM/YYYY
   const formatToDDMMYYYY = (dateStr) => {
@@ -494,32 +508,213 @@ const MovieDetailPage = () => {
             </div>
           </div>
 
-          {/* Country Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <label htmlFor="country-select" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          {/* Custom Modern Cinema Region Dropdown */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>
               Region:
-            </label>
-            <select
-              id="country-select"
-              value={selectedCountry}
-              onChange={(e) => setSelectedCountry(e.target.value)}
-              className="form-control"
-              style={{
-                width: 'auto',
-                padding: '6px 14px',
-                fontSize: '0.85rem',
-                background: '#0d121d',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: '#ffffff',
-                borderRadius: '8px',
-              }}
-            >
-              {COUNTRY_OPTIONS.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label} {watchProviders[c.code] ? '✓' : ''}
-                </option>
-              ))}
-            </select>
+            </span>
+
+            <div style={{ position: 'relative' }} ref={regionDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setRegionDropdownOpen((prev) => !prev)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '7px 14px',
+                  background: regionDropdownOpen ? 'rgba(20, 28, 44, 0.98)' : 'rgba(14, 20, 32, 0.95)',
+                  border: regionDropdownOpen ? '1px solid #e50914' : '1px solid rgba(229, 9, 20, 0.35)',
+                  borderRadius: '10px',
+                  color: '#ffffff',
+                  fontSize: '0.88rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: regionDropdownOpen
+                    ? '0 0 14px rgba(229, 9, 20, 0.35)'
+                    : '0 2px 8px rgba(0, 0, 0, 0.4)',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  minWidth: '150px',
+                  justifyContent: 'space-between',
+                  outline: 'none',
+                }}
+                title="Select Region for Streaming Providers"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span
+                    style={{
+                      background: 'rgba(229, 9, 20, 0.2)',
+                      color: '#ff4d4d',
+                      padding: '2px 6px',
+                      borderRadius: '5px',
+                      fontSize: '0.74rem',
+                      fontWeight: 800,
+                      letterSpacing: '0.5px',
+                      border: '1px solid rgba(229, 9, 20, 0.35)',
+                    }}
+                  >
+                    {selectedCountry}
+                  </span>
+                  <span>{COUNTRY_OPTIONS.find((c) => c.code === selectedCountry)?.name || selectedCountry}</span>
+                  {watchProviders[selectedCountry] && (
+                    <span
+                      style={{
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        background: '#10b981',
+                        boxShadow: '0 0 6px rgba(16, 185, 129, 0.7)',
+                      }}
+                      title="Streaming Providers Available"
+                    />
+                  )}
+                </div>
+
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    transform: regionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                    color: regionDropdownOpen ? '#e50914' : 'var(--text-muted)',
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {/* Floating Menu */}
+              {regionDropdownOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    right: 0,
+                    minWidth: '220px',
+                    background: 'linear-gradient(145deg, #131a28 0%, #0a0e17 100%)',
+                    border: '1px solid rgba(229, 9, 20, 0.45)',
+                    borderRadius: '12px',
+                    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(229, 9, 20, 0.25)',
+                    padding: '6px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    zIndex: 200,
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    animation: 'fadeIn 0.15s ease-out',
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '6px 10px 4px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      color: 'var(--text-dim)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.6px',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    Select Streaming Region
+                  </div>
+
+                  {COUNTRY_OPTIONS.map((c) => {
+                    const isSelected = selectedCountry === c.code;
+                    const hasData = !!watchProviders[c.code];
+
+                    return (
+                      <div
+                        key={c.code}
+                        onClick={() => {
+                          setSelectedCountry(c.code);
+                          setRegionDropdownOpen(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '9px 12px',
+                          borderRadius: '8px',
+                          fontSize: '0.85rem',
+                          fontWeight: isSelected ? 700 : 500,
+                          color: isSelected ? '#ffffff' : '#cbd5e1',
+                          background: isSelected
+                            ? 'linear-gradient(90deg, rgba(229, 9, 20, 0.22), rgba(229, 9, 20, 0.08))'
+                            : 'transparent',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          border: isSelected ? '1px solid rgba(229, 9, 20, 0.4)' : '1px solid transparent',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                            e.currentTarget.style.color = '#ffffff';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = '#cbd5e1';
+                          }
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span
+                            style={{
+                              background: isSelected ? '#e50914' : 'rgba(255, 255, 255, 0.08)',
+                              color: '#ffffff',
+                              padding: '2px 7px',
+                              borderRadius: '5px',
+                              fontSize: '0.72rem',
+                              fontWeight: 800,
+                              letterSpacing: '0.5px',
+                            }}
+                          >
+                            {c.code}
+                          </span>
+                          <span>{c.name}</span>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {hasData ? (
+                            <span
+                              style={{
+                                fontSize: '0.72rem',
+                                color: '#10b981',
+                                background: 'rgba(16, 185, 129, 0.12)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontWeight: 600,
+                              }}
+                            >
+                              Available
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
+                              No info
+                            </span>
+                          )}
+
+                          {isSelected && (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e50914" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
