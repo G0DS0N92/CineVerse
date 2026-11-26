@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getWatchlist,
+  getSharedWatchlist,
   addToWatchlist,
   updateWatchlistItem,
   deleteFromWatchlist,
@@ -11,7 +12,10 @@ const {
 } = require('../controllers/watchlistController');
 const { protect } = require('../middleware/authMiddleware');
 
-// All watchlist and reminder operations require authentication
+// Public shared watchlist endpoint (accessible without login)
+router.get('/shared/:userId', getSharedWatchlist);
+
+// All other watchlist and reminder operations require authentication
 router.use(protect);
 
 router.get('/', getWatchlist);

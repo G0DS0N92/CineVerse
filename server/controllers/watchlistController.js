@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const Watchlist = require('../models/Watchlist');
+const User = require('../models/User');
 
 // @desc    Get all watchlist items for logged-in user
 // @route   GET /api/watchlist
@@ -332,8 +334,49 @@ const getDashboardStats = async (req, res, next) => {
   }
 };
 
+// @desc    Get public shared watchlist for a user
+// @route   GET /api/watchlist/shared/:userId
+// @access  Public
+const getSharedWatchlist = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user identifier.',
+      });
+    }
+
+    const targetUser = await User.findById(userId).select('name avatar createdAt');
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Watchlist not found or user account no longer exists.',
+      });
+    }
+
+    const items = await Watchlist.find({ userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: targetUser._id,
+        name: targetUser.name,
+        avatar: targetUser.avatar || '',
+        memberSince: targetUser.createdAt,
+      },
+      count: items.length,
+      data: items,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getWatchlist,
+  getSharedWatchlist,
   addToWatchlist,
   updateWatchlistItem,
   deleteFromWatchlist,

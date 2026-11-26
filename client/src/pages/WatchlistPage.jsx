@@ -5,16 +5,20 @@ import ReminderModal from '../components/ReminderModal';
 import ConfirmModal from '../components/ConfirmModal';
 import Toast from '../components/Toast';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const STATUS_TABS = ['All', 'Planned to Watch', 'Currently Watching', 'Watched'];
 
 const WatchlistPage = () => {
+  const { user } = useAuth();
   const [watchlist, setWatchlist] = useState([]);
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [selectedMovieForReminder, setSelectedMovieForReminder] = useState(null);
   const [movieToDelete, setMovieToDelete] = useState(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Fetch Watchlist items
   const fetchWatchlist = async () => {
@@ -96,6 +100,23 @@ const WatchlistPage = () => {
     }
   };
 
+  // Construct public share URL
+  const getShareUrl = () =>
+    `${window.location.origin}/shared/watchlist/${user?._id || user?.id || ''}`;
+
+  const handleCopyShareLink = () => {
+    const shareUrl = getShareUrl();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        setLinkCopied(true);
+        setToast({ message: 'Public watchlist link copied to clipboard!', type: 'success' });
+        setTimeout(() => setLinkCopied(false), 3000);
+      });
+    } else {
+      setToast({ message: 'Link: ' + shareUrl, type: 'info' });
+    }
+  };
+
   // Filter items by status tab
   const filteredList = watchlist.filter((item) => {
     if (activeTab === 'All') return true;
@@ -114,9 +135,28 @@ const WatchlistPage = () => {
           </p>
         </div>
 
-        <Link to="/discover" className="btn btn-primary">
-          + Add More Movies
-        </Link>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="btn btn-secondary"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            title="Get Shareable Public Link"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+            <span>Share Watchlist</span>
+          </button>
+
+          <Link to="/discover" className="btn btn-primary">
+            + Add More Movies
+          </Link>
+        </div>
       </div>
 
       {/* Status Filter Tabs */}
@@ -195,6 +235,157 @@ const WatchlistPage = () => {
         onConfirm={handleConfirmDelete}
         onCancel={() => setMovieToDelete(null)}
       />
+
+      {/* Share Watchlist Modal */}
+      {isShareModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsShareModalOpen(false)}>
+          <div
+            className="modal-content custom-reminder-modal"
+            style={{ maxWidth: '480px', width: '90%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: 'rgba(229, 9, 20, 0.15)',
+                    border: '1px solid rgba(229, 9, 20, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#e50914',
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="18" cy="5" r="3" />
+                    <circle cx="6" cy="12" r="3" />
+                    <circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  </svg>
+                </div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#ffffff' }}>
+                  Share Your Watchlist
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  fontSize: '1.2rem',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '18px' }}>
+              Anyone with this public link can explore your bookmarked movies, ratings, and watching progress in a clean cinema view.
+            </p>
+
+            {/* Link Copy Box */}
+            <div
+              style={{
+                background: 'rgba(0, 0, 0, 0.4)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                padding: '6px 8px 6px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '20px',
+              }}
+            >
+              <input
+                type="text"
+                readOnly
+                value={getShareUrl()}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#f1f5f9',
+                  fontSize: '0.82rem',
+                  flex: 1,
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleCopyShareLink}
+                className="btn btn-sm"
+                style={{
+                  background: linkCopied ? '#10b981' : '#e50914',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontWeight: 700,
+                  fontSize: '0.78rem',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease',
+                  flexShrink: 0,
+                }}
+              >
+                {linkCopied ? 'Copied!' : 'Copy Link'}
+              </button>
+            </div>
+
+            {/* Quick Share Targets */}
+            <div style={{ marginBottom: '16px' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
+                Quick Share
+              </span>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <a
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent('Check out my movie watchlist on CineVerse: ' + getShareUrl())}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.78rem', padding: '6px 12px', borderRadius: '6px' }}
+                >
+                  WhatsApp
+                </a>
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out my movie watchlist on CineVerse: ' + getShareUrl())}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.78rem', padding: '6px 12px', borderRadius: '6px' }}
+                >
+                  X (Twitter)
+                </a>
+                <a
+                  href={`https://t.me/share/url?url=${encodeURIComponent(getShareUrl())}&text=${encodeURIComponent('Check out my movie watchlist on CineVerse')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.78rem', padding: '6px 12px', borderRadius: '6px' }}
+                >
+                  Telegram
+                </a>
+              </div>
+            </div>
+
+            {/* Preview Link */}
+            <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+              <Link
+                to={`/shared/watchlist/${user?._id || user?.id}`}
+                target="_blank"
+                style={{ fontSize: '0.82rem', color: '#e50914', fontWeight: 700, textDecoration: 'none' }}
+              >
+                Preview Public View →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>

@@ -14,6 +14,7 @@ import DiscoveryPage from './pages/DiscoveryPage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import DashboardPage from './pages/DashboardPage';
 import WatchlistPage from './pages/WatchlistPage';
+import SharedWatchlistPage from './pages/SharedWatchlistPage';
 import RemindersPage from './pages/RemindersPage';
 import ProfilePage from './pages/ProfilePage';
 
@@ -30,6 +31,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/discover" element={<DiscoveryPage />} />
               <Route path="/movies/:id" element={<MovieDetailPage />} />
+              <Route path="/shared/watchlist/:userId" element={<SharedWatchlistPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
