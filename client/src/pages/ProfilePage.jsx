@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import Toast from '../components/Toast';
 import { sendAccountDeletionOTP } from '../services/emailService';
 
 const ProfilePage = () => {
   const { user, updateProfile, logout, deleteAccount } = useAuth();
+  const { accent, setAccent, ACCENT_THEMES } = useTheme();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
@@ -420,6 +422,140 @@ const ProfilePage = () => {
             {loading ? 'Saving Changes...' : 'Save Profile Changes'}
           </button>
         </form>
+
+        <hr style={{ borderColor: 'var(--border-color)', margin: '28px 0' }} />
+
+        {/* Cinema Glow Accent Switcher Settings */}
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div
+                style={{
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: 'var(--accent-primary)',
+                  boxShadow: 'var(--shadow-glow)',
+                }}
+              />
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>
+                Cinema Glow Accent
+              </h2>
+            </div>
+            <span
+              style={{
+                fontSize: '0.74rem',
+                color: 'var(--accent-primary)',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
+              Active: {ACCENT_THEMES.find((t) => t.id === accent)?.name || 'Cinema Crimson'}
+            </span>
+          </div>
+
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '14px' }}>
+            Select your ambient neon glow theme. Buttons, glowing rings, badges, and scrollbars adapt immediately across CineVerse.
+          </p>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: '10px',
+            }}
+          >
+            {ACCENT_THEMES.map((theme) => {
+              const isSelected = accent === theme.id;
+
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  onClick={() => {
+                    setAccent(theme.id);
+                    setToast({
+                      message: `Cinema Glow updated to ${theme.name}!`,
+                      type: 'success',
+                    });
+                  }}
+                  style={{
+                    background: isSelected ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                    border: isSelected
+                      ? `2px solid ${theme.color}`
+                      : '1px solid var(--border-color)',
+                    borderRadius: '12px',
+                    padding: '12px 10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    boxShadow: isSelected ? `0 0 16px rgba(${theme.rgb}, 0.35)` : 'none',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = `rgba(${theme.rgb}, 0.45)`;
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = 'var(--border-color)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      background: theme.color,
+                      boxShadow: `0 0 12px ${theme.color}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isSelected && (
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#000000"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div
+                      style={{
+                        fontSize: '0.84rem',
+                        fontWeight: 700,
+                        color: isSelected ? theme.color : '#ffffff',
+                      }}
+                    >
+                      {theme.name}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>
+                      {theme.description}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <hr style={{ borderColor: 'var(--border-color)', margin: '28px 0' }} />
 

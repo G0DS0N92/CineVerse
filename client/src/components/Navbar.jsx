@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import CinemaGlowSwitcher from './CinemaGlowSwitcher';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -98,8 +99,10 @@ const Navbar = () => {
           />
         </form>
 
-        {/* User Auth Actions */}
+        {/* User Auth Actions & Glow Switcher */}
         <div className="nav-auth-buttons">
+          <CinemaGlowSwitcher />
+
           {isAuthenticated ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Link

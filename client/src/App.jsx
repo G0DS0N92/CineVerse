@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -20,12 +21,13 @@ import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="app-layout">
-          <ReminderNotificationListener />
-          <Navbar />
-          <main className="main-content">
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="app-layout">
+            <ReminderNotificationListener />
+            <Navbar />
+            <main className="main-content">
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
@@ -77,6 +79,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 
