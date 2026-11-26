@@ -347,10 +347,10 @@ const StreamingProviderBadge = ({ provider, movieTitle, categoryType, countryCod
         gap: '12px',
         padding: '10px 16px',
         background: isHovered
-          ? 'linear-gradient(135deg, rgba(229, 9, 20, 0.18), rgba(255, 255, 255, 0.08))'
+          ? 'linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), rgba(255, 255, 255, 0.08))'
           : 'rgba(255, 255, 255, 0.04)',
         border: isHovered
-          ? '1px solid rgba(229, 9, 20, 0.65)'
+          ? '1px solid rgba(var(--accent-rgb), 0.65)'
           : '1px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '12px',
         textDecoration: 'none',
@@ -359,7 +359,7 @@ const StreamingProviderBadge = ({ provider, movieTitle, categoryType, countryCod
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
         boxShadow: isHovered
-          ? '0 6px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(229, 9, 20, 0.3)'
+          ? '0 6px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(var(--accent-rgb), 0.3)'
           : '0 2px 8px rgba(0, 0, 0, 0.3)',
       }}
     >
@@ -381,7 +381,7 @@ const StreamingProviderBadge = ({ provider, movieTitle, categoryType, countryCod
         <span
           style={{
             fontSize: '0.74rem',
-            color: isHovered ? '#ff4d4d' : 'var(--text-muted)',
+            color: isHovered ? 'var(--accent-primary)' : 'var(--text-muted)',
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
@@ -401,7 +401,7 @@ const StreamingProviderBadge = ({ provider, movieTitle, categoryType, countryCod
           width: '24px',
           height: '24px',
           borderRadius: '50%',
-          background: isHovered ? '#e50914' : 'rgba(255, 255, 255, 0.08)',
+          background: isHovered ? 'var(--accent-primary)' : 'rgba(255, 255, 255, 0.08)',
           color: '#ffffff',
           display: 'flex',
           alignItems: 'center',

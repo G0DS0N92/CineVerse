@@ -163,13 +163,13 @@ const SharedWatchlistPage = () => {
             width: '64px',
             height: '64px',
             borderRadius: '50%',
-            background: 'rgba(229, 9, 20, 0.15)',
-            border: '1px solid rgba(229, 9, 20, 0.4)',
+            background: 'rgba(var(--accent-rgb), 0.15)',
+            border: '1px solid rgba(var(--accent-rgb), 0.4)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 20px',
-            color: '#e50914',
+            color: 'var(--accent-primary)',
           }}
         >
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -203,7 +203,7 @@ const SharedWatchlistPage = () => {
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
-              <span style={{ fontSize: '1.8rem', fontWeight: 800, color: '#e50914' }}>
+              <span style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
                 {sharedUser.name?.charAt(0)?.toUpperCase() || 'C'}
               </span>
             )}
@@ -216,9 +216,9 @@ const SharedWatchlistPage = () => {
               </h1>
               <span
                 style={{
-                  background: 'rgba(229, 9, 20, 0.18)',
-                  color: '#ff4d4d',
-                  border: '1px solid rgba(229, 9, 20, 0.35)',
+                  background: 'rgba(var(--accent-rgb), 0.18)',
+                  color: 'var(--accent-primary)',
+                  border: '1px solid rgba(var(--accent-rgb), 0.35)',
                   fontSize: '0.72rem',
                   fontWeight: 700,
                   padding: '2px 8px',
@@ -512,9 +512,9 @@ const SharedWatchlistPage = () => {
                         style={{
                           width: '100%',
                           padding: '7px 6px',
-                          background: 'rgba(229, 9, 20, 0.15)',
-                          color: '#ff4d4d',
-                          border: '1px solid rgba(229, 9, 20, 0.35)',
+                          background: 'rgba(var(--accent-rgb), 0.15)',
+                          color: 'var(--accent-primary)',
+                          border: '1px solid rgba(var(--accent-rgb), 0.35)',
                           borderRadius: '6px',
                           fontSize: '0.74rem',
                           fontWeight: 700,
@@ -526,7 +526,7 @@ const SharedWatchlistPage = () => {
                           transition: 'all 0.15s ease',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = '#e50914';
+                          e.currentTarget.style.background = 'var(--accent-primary)';
                           e.currentTarget.style.color = '#ffffff';
                         }}
                         onMouseLeave={(e) => {

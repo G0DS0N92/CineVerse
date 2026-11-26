@@ -251,12 +251,12 @@ const WatchlistPage = () => {
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    background: 'rgba(229, 9, 20, 0.15)',
-                    border: '1px solid rgba(229, 9, 20, 0.35)',
+                    background: 'rgba(var(--accent-rgb), 0.15)',
+                    border: '1px solid rgba(var(--accent-rgb), 0.35)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#e50914',
+                    color: 'var(--accent-primary)',
                     flexShrink: 0,
                   }}
                 >
@@ -305,7 +305,7 @@ const WatchlistPage = () => {
                 onClick={handleCopyShareLink}
                 className="share-modal-copy-btn"
                 style={{
-                  background: linkCopied ? '#10b981' : '#e50914',
+                  background: linkCopied ? '#10b981' : 'var(--accent-primary)',
                 }}
               >
                 {linkCopied ? 'Copied!' : 'Copy Link'}
@@ -350,7 +350,7 @@ const WatchlistPage = () => {
               <Link
                 to={`/shared/watchlist/${user?._id || user?.id}`}
                 target="_blank"
-                style={{ fontSize: '0.82rem', color: '#e50914', fontWeight: 700, textDecoration: 'none' }}
+                style={{ fontSize: '0.82rem', color: 'var(--accent-primary)', fontWeight: 700, textDecoration: 'none' }}
               >
                 Preview Public View →
               </Link>

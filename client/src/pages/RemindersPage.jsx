@@ -279,8 +279,8 @@ const RemindersPage = () => {
                 width: '38px',
                 height: '38px',
                 borderRadius: '10px',
-                background: 'rgba(229, 9, 20, 0.15)',
-                color: '#e50914',
+                background: 'rgba(var(--accent-rgb), 0.15)',
+                color: 'var(--accent-primary)',
               }}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -314,8 +314,8 @@ const RemindersPage = () => {
         <div
           onClick={() => setActiveTab('all')}
           style={{
-            background: activeTab === 'all' ? 'rgba(229, 9, 20, 0.12)' : 'var(--bg-card)',
-            border: activeTab === 'all' ? '1px solid #e50914' : '1px solid var(--border-color)',
+            background: activeTab === 'all' ? 'rgba(var(--accent-rgb), 0.12)' : 'var(--bg-card)',
+            border: activeTab === 'all' ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
             borderRadius: 'var(--radius-md)',
             padding: '20px',
             cursor: 'pointer',
@@ -449,7 +449,7 @@ const RemindersPage = () => {
                 key={r._id}
                 style={{
                   background: 'var(--bg-card)',
-                  border: isDue ? '1px solid rgba(229, 9, 20, 0.45)' : '1px solid var(--border-color)',
+                  border: isDue ? '1px solid rgba(var(--accent-rgb), 0.45)' : '1px solid var(--border-color)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '20px 24px',
                   display: 'flex',
@@ -458,7 +458,7 @@ const RemindersPage = () => {
                   gap: '20px',
                   flexWrap: 'wrap',
                   opacity: isCompleted ? 0.65 : 1,
-                  boxShadow: isDue ? '0 4px 20px rgba(229, 9, 20, 0.15)' : 'none',
+                  boxShadow: isDue ? '0 4px 20px rgba(var(--accent-rgb), 0.15)' : 'none',
                 }}
               >
                 {/* Left: Thumbnail and Details */}
@@ -578,7 +578,7 @@ const RemindersPage = () => {
                           background: 'rgba(255, 255, 255, 0.03)',
                           padding: '6px 12px',
                           borderRadius: '6px',
-                          borderLeft: '2px solid rgba(229, 9, 20, 0.6)',
+                          borderLeft: '2px solid rgba(var(--accent-rgb), 0.6)',
                         }}
                       >
                         "{r.notes}"

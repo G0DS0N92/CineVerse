@@ -48,7 +48,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
           background: '#0d111a',
           borderRadius: '16px',
           border: '1px solid rgba(255, 255, 255, 0.12)',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(229, 9, 20, 0.25)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(var(--accent-rgb), 0.25)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -63,7 +63,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
             justifyContent: 'space-between',
             padding: '16px 24px',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'linear-gradient(to right, rgba(229, 9, 20, 0.15), rgba(15, 21, 34, 0.8))',
+            background: 'linear-gradient(to right, rgba(var(--accent-rgb), 0.15), rgba(15, 21, 34, 0.8))',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -75,7 +75,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
-                background: '#e50914',
+                background: 'var(--accent-primary)',
                 color: '#fff',
               }}
             >
@@ -117,7 +117,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
               fontSize: '1.2rem',
               transition: 'background 0.2s',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(229, 9, 20, 0.8)')}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(var(--accent-rgb), 0.8)')}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)')}
           >
             ✕

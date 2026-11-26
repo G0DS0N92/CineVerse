@@ -257,7 +257,7 @@ const ProfilePage = () => {
                   borderRadius: '50%',
                   objectFit: 'cover',
                   border: '3px solid var(--accent-primary)',
-                  boxShadow: '0 4px 16px rgba(229, 9, 20, 0.35)',
+                  boxShadow: '0 4px 16px rgba(var(--accent-rgb), 0.35)',
                   display: 'block',
                 }}
               />
@@ -267,15 +267,15 @@ const ProfilePage = () => {
                   width: '84px',
                   height: '84px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, var(--accent-primary), #8b0000)',
+                  background: 'linear-gradient(135deg, var(--accent-primary), rgba(var(--accent-rgb), 0.4))',
                   color: '#fff',
                   fontSize: '2.2rem',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '3px solid rgba(229, 9, 20, 0.4)',
-                  boxShadow: '0 4px 16px rgba(229, 9, 20, 0.25)',
+                  border: '3px solid rgba(var(--accent-rgb), 0.4)',
+                  boxShadow: '0 4px 16px rgba(var(--accent-rgb), 0.25)',
                 }}
               >
                 {name ? name.charAt(0).toUpperCase() : 'U'}

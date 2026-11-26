@@ -53,7 +53,7 @@ const DashboardPage = () => {
       {/* Welcome Banner */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(229, 9, 20, 0.18) 0%, rgba(19, 24, 34, 0.9) 100%)',
+          background: 'linear-gradient(135deg, rgba(var(--accent-rgb), 0.18) 0%, rgba(19, 24, 34, 0.9) 100%)',
           borderRadius: 'var(--radius-lg)',
           padding: '32px',
           border: '1px solid var(--border-color)',

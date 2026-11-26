@@ -408,9 +408,9 @@ const MovieDetailPage = () => {
               {movie.certification && (
                 <span
                   style={{
-                    background: 'rgba(229, 9, 20, 0.18)',
-                    color: '#ff4d4d',
-                    border: '1px solid rgba(229, 9, 20, 0.45)',
+                    background: 'rgba(var(--accent-rgb), 0.18)',
+                    color: 'var(--accent-primary)',
+                    border: '1px solid rgba(var(--accent-rgb), 0.45)',
                     padding: '3px 9px',
                     borderRadius: '6px',
                     fontWeight: 700,
@@ -512,10 +512,10 @@ const MovieDetailPage = () => {
                     padding: '10px 22px',
                     fontSize: '0.95rem',
                     fontWeight: 600,
-                    background: 'linear-gradient(135deg, rgba(229, 9, 20, 0.25), rgba(229, 9, 20, 0.08))',
+                    background: 'linear-gradient(135deg, rgba(var(--accent-rgb), 0.25), rgba(var(--accent-rgb), 0.08))',
                     color: '#ffffff',
-                    border: '1px solid rgba(229, 9, 20, 0.6)',
-                    boxShadow: '0 0 16px rgba(229, 9, 20, 0.25)',
+                    border: '1px solid rgba(var(--accent-rgb), 0.6)',
+                    boxShadow: '0 0 16px rgba(var(--accent-rgb), 0.25)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '8px',
@@ -621,11 +621,11 @@ const MovieDetailPage = () => {
                 width: '36px',
                 height: '36px',
                 borderRadius: '8px',
-                background: 'rgba(229, 9, 20, 0.15)',
+                background: 'rgba(var(--accent-rgb), 0.15)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#e50914',
+                color: 'var(--accent-primary)',
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -659,14 +659,14 @@ const MovieDetailPage = () => {
                   gap: '10px',
                   padding: '7px 14px',
                   background: regionDropdownOpen ? 'rgba(20, 28, 44, 0.98)' : 'rgba(14, 20, 32, 0.95)',
-                  border: regionDropdownOpen ? '1px solid #e50914' : '1px solid rgba(229, 9, 20, 0.35)',
+                  border: regionDropdownOpen ? '1px solid var(--accent-primary)' : '1px solid rgba(var(--accent-rgb), 0.35)',
                   borderRadius: '10px',
                   color: '#ffffff',
                   fontSize: '0.88rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   boxShadow: regionDropdownOpen
-                    ? '0 0 14px rgba(229, 9, 20, 0.35)'
+                    ? '0 0 14px rgba(var(--accent-rgb), 0.35)'
                     : '0 2px 8px rgba(0, 0, 0, 0.4)',
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   minWidth: '150px',
@@ -678,14 +678,14 @@ const MovieDetailPage = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span
                     style={{
-                      background: 'rgba(229, 9, 20, 0.2)',
-                      color: '#ff4d4d',
+                      background: 'rgba(var(--accent-rgb), 0.2)',
+                      color: 'var(--accent-primary)',
                       padding: '2px 6px',
                       borderRadius: '5px',
                       fontSize: '0.74rem',
                       fontWeight: 800,
                       letterSpacing: '0.5px',
-                      border: '1px solid rgba(229, 9, 20, 0.35)',
+                      border: '1px solid rgba(var(--accent-rgb), 0.35)',
                     }}
                   >
                     {selectedCountry}
@@ -717,7 +717,7 @@ const MovieDetailPage = () => {
                   style={{
                     transform: regionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.2s ease',
-                    color: regionDropdownOpen ? '#e50914' : 'var(--text-muted)',
+                    color: regionDropdownOpen ? 'var(--accent-primary)' : 'var(--text-muted)',
                   }}
                 >
                   <polyline points="6 9 12 15 18 9" />
@@ -734,9 +734,9 @@ const MovieDetailPage = () => {
                     minWidth: '290px',
                     width: 'max-content',
                     background: 'linear-gradient(145deg, #131a28 0%, #0a0e17 100%)',
-                    border: '1px solid rgba(229, 9, 20, 0.45)',
+                    border: '1px solid rgba(var(--accent-rgb), 0.45)',
                     borderRadius: '12px',
-                    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(229, 9, 20, 0.25)',
+                    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(var(--accent-rgb), 0.25)',
                     padding: '6px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -785,11 +785,11 @@ const MovieDetailPage = () => {
                           fontWeight: isSelected ? 700 : 500,
                           color: isSelected ? '#ffffff' : '#cbd5e1',
                           background: isSelected
-                            ? 'linear-gradient(90deg, rgba(229, 9, 20, 0.22), rgba(229, 9, 20, 0.08))'
+                            ? 'linear-gradient(90deg, rgba(var(--accent-rgb), 0.22), rgba(var(--accent-rgb), 0.08))'
                             : 'transparent',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
-                          border: isSelected ? '1px solid rgba(229, 9, 20, 0.4)' : '1px solid transparent',
+                          border: isSelected ? '1px solid rgba(var(--accent-rgb), 0.4)' : '1px solid transparent',
                           whiteSpace: 'nowrap',
                         }}
                         onMouseEnter={(e) => {
@@ -808,7 +808,7 @@ const MovieDetailPage = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', whiteSpace: 'nowrap' }}>
                           <span
                             style={{
-                              background: isSelected ? '#e50914' : 'rgba(255, 255, 255, 0.08)',
+                              background: isSelected ? 'var(--accent-primary)' : 'rgba(255, 255, 255, 0.08)',
                               color: '#ffffff',
                               padding: '2px 7px',
                               borderRadius: '5px',
@@ -845,7 +845,7 @@ const MovieDetailPage = () => {
                           )}
 
                           {isSelected && (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e50914" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                           )}
@@ -907,7 +907,7 @@ const MovieDetailPage = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.7px',
-                      color: '#e50914',
+                      color: 'var(--accent-primary)',
                       marginBottom: '12px',
                     }}
                   >
@@ -957,7 +957,7 @@ const MovieDetailPage = () => {
                     rel="noopener noreferrer"
                     style={{
                       fontSize: '0.84rem',
-                      color: '#e50914',
+                      color: 'var(--accent-primary)',
                       textDecoration: 'none',
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1005,11 +1005,11 @@ const MovieDetailPage = () => {
                   width: '36px',
                   height: '36px',
                   borderRadius: '8px',
-                  background: 'rgba(229, 9, 20, 0.15)',
+                  background: 'rgba(var(--accent-rgb), 0.15)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#e50914',
+                  color: 'var(--accent-primary)',
                 }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1039,7 +1039,7 @@ const MovieDetailPage = () => {
                   padding: '6px 14px',
                   background: 'rgba(255, 255, 255, 0.04)',
                   borderRadius: '10px',
-                  border: '1px solid rgba(229, 9, 20, 0.35)',
+                  border: '1px solid rgba(var(--accent-rgb), 0.35)',
                 }}
               >
                 {credits.director.profile_path ? (
@@ -1051,7 +1051,7 @@ const MovieDetailPage = () => {
                       height: '36px',
                       borderRadius: '50%',
                       objectFit: 'cover',
-                      border: '1px solid rgba(229, 9, 20, 0.5)',
+                      border: '1px solid rgba(var(--accent-rgb), 0.5)',
                     }}
                   />
                 ) : (
@@ -1079,7 +1079,7 @@ const MovieDetailPage = () => {
                       fontWeight: 800,
                       textTransform: 'uppercase',
                       letterSpacing: '0.6px',
-                      color: '#e50914',
+                      color: 'var(--accent-primary)',
                       display: 'block',
                     }}
                   >
@@ -1118,7 +1118,7 @@ const MovieDetailPage = () => {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.borderColor = 'rgba(229, 9, 20, 0.5)';
+                    e.currentTarget.style.borderColor = 'rgba(var(--accent-rgb), 0.5)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
@@ -1198,11 +1198,11 @@ const MovieDetailPage = () => {
                 width: '36px',
                 height: '36px',
                 borderRadius: '8px',
-                background: 'rgba(229, 9, 20, 0.15)',
+                background: 'rgba(var(--accent-rgb), 0.15)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#e50914',
+                color: 'var(--accent-primary)',
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

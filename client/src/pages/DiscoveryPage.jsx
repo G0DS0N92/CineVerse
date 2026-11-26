@@ -436,8 +436,8 @@ const DiscoveryPage = () => {
                 alignItems: 'center',
                 gap: '10px',
                 background: 'linear-gradient(135deg, rgba(19, 26, 40, 0.95), rgba(10, 14, 23, 0.95))',
-                border: sortDropdownOpen ? '1px solid #e50914' : '1px solid rgba(255, 255, 255, 0.12)',
-                boxShadow: sortDropdownOpen ? '0 0 14px rgba(229, 9, 20, 0.4)' : 'none',
+                border: sortDropdownOpen ? '1px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.12)',
+                boxShadow: sortDropdownOpen ? '0 0 14px rgba(var(--accent-rgb), 0.4)' : 'none',
                 borderRadius: '8px',
                 padding: '6px 12px',
                 color: '#ffffff',
@@ -465,7 +465,7 @@ const DiscoveryPage = () => {
                 style={{
                   transform: sortDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s ease',
-                  color: sortDropdownOpen ? '#e50914' : 'var(--text-muted)',
+                  color: sortDropdownOpen ? 'var(--accent-primary)' : 'var(--text-muted)',
                 }}
               >
                 <polyline points="6 9 12 15 18 9" />
@@ -482,9 +482,9 @@ const DiscoveryPage = () => {
                   minWidth: '210px',
                   width: 'max-content',
                   background: 'linear-gradient(145deg, #131a28 0%, #0a0e17 100%)',
-                  border: '1px solid rgba(229, 9, 20, 0.45)',
+                  border: '1px solid rgba(var(--accent-rgb), 0.45)',
                   borderRadius: '12px',
-                  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(229, 9, 20, 0.25)',
+                  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(var(--accent-rgb), 0.25)',
                   padding: '6px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -531,11 +531,11 @@ const DiscoveryPage = () => {
                         fontWeight: isSelected ? 700 : 500,
                         color: isSelected ? '#ffffff' : '#cbd5e1',
                         background: isSelected
-                          ? 'linear-gradient(90deg, rgba(229, 9, 20, 0.22), rgba(229, 9, 20, 0.08))'
+                          ? 'linear-gradient(90deg, rgba(var(--accent-rgb), 0.22), rgba(var(--accent-rgb), 0.08))'
                           : 'transparent',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
-                        border: isSelected ? '1px solid rgba(229, 9, 20, 0.4)' : '1px solid transparent',
+                        border: isSelected ? '1px solid rgba(var(--accent-rgb), 0.4)' : '1px solid transparent',
                         whiteSpace: 'nowrap',
                       }}
                       onMouseEnter={(e) => {
@@ -558,7 +558,7 @@ const DiscoveryPage = () => {
                           height="14"
                           viewBox="0 0 24 24"
                           fill="none"
-                          stroke="#e50914"
+                          stroke="var(--accent-primary)"
                           strokeWidth="3"
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -613,14 +613,14 @@ const DiscoveryPage = () => {
                 fontSize: '0.82rem',
                 fontWeight: isSelected ? 700 : 500,
                 background: isSelected
-                  ? '#e50914'
+                  ? 'var(--accent-primary)'
                   : 'rgba(255, 255, 255, 0.05)',
                 color: isSelected ? '#ffffff' : 'var(--text-muted)',
                 border: isSelected
-                  ? '1px solid #e50914'
+                  ? '1px solid var(--accent-primary)'
                   : '1px solid rgba(255, 255, 255, 0.1)',
                 boxShadow: isSelected
-                  ? '0 0 12px rgba(229, 9, 20, 0.45)'
+                  ? '0 0 12px rgba(var(--accent-rgb), 0.45)'
                   : 'none',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
