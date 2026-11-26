@@ -91,7 +91,7 @@ const addToWatchlist = async (req, res, next) => {
       if (isRestricted) {
         return res.status(403).json({
           success: false,
-          message: `Content Restricted: This movie is rated ${certName || '18+'} (Adults Only). Underage users (${userAge} y/o) cannot add adult content to their watchlist.`,
+          message: `Content Restricted: This movie is rated ${certName || '18+'} (Adults Only). Underage users (${parsedAge} y/o) cannot add adult content to their watchlist.`,
         });
       }
     }

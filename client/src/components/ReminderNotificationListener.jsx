@@ -5,12 +5,42 @@ import API from '../services/api';
 import ReminderAlertModal from './ReminderAlertModal';
 import Toast from './Toast';
 
+// Shared Web Audio context to satisfy browser autoplay policies
+let sharedAudioCtx = null;
+
+const unlockAudioContext = () => {
+  try {
+    if (!sharedAudioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        sharedAudioCtx = new AudioContextClass();
+      }
+    }
+    if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume().catch(() => {});
+    }
+  } catch (e) {}
+};
+
+// Listen for the first user interaction to proactively unlock Web Audio context
+if (typeof window !== 'undefined') {
+  const unlockEvents = ['click', 'keydown', 'touchstart'];
+  const handleFirstInteraction = () => {
+    unlockAudioContext();
+    unlockEvents.forEach((ev) => window.removeEventListener(ev, handleFirstInteraction));
+  };
+  unlockEvents.forEach((ev) =>
+    window.addEventListener(ev, handleFirstInteraction, { once: true, passive: true })
+  );
+}
+
 // Synthesize a high-fidelity cinematic chime using the Web Audio API
 const playCinemaChime = () => {
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
+    const ctx = sharedAudioCtx || new AudioContextClass();
+    sharedAudioCtx = ctx;
 
     const playNotes = () => {
       try {
@@ -50,6 +80,27 @@ const playCinemaChime = () => {
   } catch (e) {
     // Autoplay restrictions handled gracefully
   }
+};
+
+// Helper: Parse DD/MM/YYYY, YYYY-MM-DD or ISO date into valid local Date object
+const parseReminderDate = (dateStr, timeStr = '20:00') => {
+  if (!dateStr) return null;
+  const cleanTime = timeStr.length === 5 ? timeStr : timeStr.padStart(5, '0');
+
+  // If formatted as DD/MM/YYYY
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      const target = new Date(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${cleanTime}:00`);
+      if (!isNaN(target.getTime())) return target;
+    }
+  }
+
+  // Standard YYYY-MM-DD format
+  const cleanDate = dateStr.split('T')[0];
+  const target = new Date(`${cleanDate}T${cleanTime}:00`);
+  return !isNaN(target.getTime()) ? target : null;
 };
 
 const getStoredAlertedIds = () => {
@@ -147,12 +198,10 @@ const ReminderNotificationListener = () => {
           continue;
         }
 
-        // Construct target Date in browser's local timezone
-        const timeStr = rem.reminderTime || '20:00';
-        const cleanTime = timeStr.length === 5 ? timeStr : timeStr.padStart(5, '0');
-        const targetDate = new Date(`${rem.reminderDate}T${cleanTime}:00`);
+        // Construct target Date in browser's local timezone (supporting DD/MM/YYYY and YYYY-MM-DD)
+        const targetDate = parseReminderDate(rem.reminderDate, rem.reminderTime);
 
-        if (isNaN(targetDate.getTime())) continue;
+        if (!targetDate || isNaN(targetDate.getTime())) continue;
 
         const diff = nowMs - targetDate.getTime();
 

@@ -137,7 +137,9 @@ const HomePage = () => {
               ...DEFAULT_UPCOMING_SLIDES[0],
               ...doomsday,
               backdrop_path: DEFAULT_UPCOMING_SLIDES[0].backdrop_path,
-              release_date: '17/12/2026',
+              release_date: doomsday.release_date
+                ? formatToDDMMYYYY(doomsday.release_date)
+                : '17/12/2026',
             },
             ...others,
           ];

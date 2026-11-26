@@ -91,10 +91,11 @@ const MovieCard = ({
 
   return (
     <div
-      className="movie-card"
+      className={`movie-card ${dropdownOpen ? 'dropdown-active' : ''}`}
       style={{
-        zIndex: dropdownOpen ? 150 : undefined,
+        zIndex: dropdownOpen ? 999 : undefined,
         overflow: dropdownOpen ? 'visible' : undefined,
+        position: dropdownOpen ? 'relative' : undefined,
       }}
     >
       {/* Poster Image - Clickable to Movie Details */}

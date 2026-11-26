@@ -244,12 +244,63 @@ const checkEmail = async (req, res, next) => {
   }
 };
 
+// @desc    Generate and save server-side OTP for account deletion
+// @route   POST /api/auth/request-delete-otp
+// @access  Private
+const requestDeleteOtp = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).select('+deletionOtp +deletionOtpExpires');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.',
+      });
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.deletionOtp = otpCode;
+    user.deletionOtpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes validity
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      otpCode,
+      message: 'Deletion verification code generated successfully.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Delete user account and all associated watchlist and reminder data
 // @route   DELETE /api/auth/profile
-// @access  Private (Requires JWT)
+// @access  Private (Requires JWT + Server-Verified OTP)
 const deleteAccount = async (req, res, next) => {
   try {
     const userId = req.user._id;
+    const { otpCode } = req.body;
+
+    const user = await User.findById(userId).select('+deletionOtp +deletionOtpExpires');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User account not found.',
+      });
+    }
+
+    if (!otpCode || !user.deletionOtp || user.deletionOtp !== otpCode.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code. Please check your email and try again.',
+      });
+    }
+
+    if (!user.deletionOtpExpires || new Date() > user.deletionOtpExpires) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification code has expired. Please request a new code.',
+      });
+    }
 
     // 1. Delete all watchlists and reminders associated with this user
     await Watchlist.deleteMany({ userId });
@@ -272,5 +323,6 @@ module.exports = {
   getMe,
   updateProfile,
   checkEmail,
+  requestDeleteOtp,
   deleteAccount,
 };

@@ -141,7 +141,7 @@ const DiscoveryPage = () => {
 
       try {
         const ep1 =
-          searchQuery.trim().length > 1
+          searchQuery.trim().length > 0
             ? `/movies/search?query=${encodeURIComponent(searchQuery.trim())}&page=1`
             : `/movies/${activeCategory}?page=1`;
 
@@ -193,7 +193,7 @@ const DiscoveryPage = () => {
 
     try {
       const endpoint =
-        targetSearch.length > 1
+        targetSearch.length > 0
           ? `/movies/search?query=${encodeURIComponent(targetSearch)}&page=${nextPage}`
           : `/movies/${targetCategory}?page=${nextPage}`;
 

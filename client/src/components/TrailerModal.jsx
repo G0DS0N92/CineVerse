@@ -1,13 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
+  const [activeVideoKey, setActiveVideoKey] = useState(videoKey);
+
+  // Sync active key and clear immediately when closing to stop YouTube background audio
+  useEffect(() => {
+    if (isOpen) {
+      setActiveVideoKey(videoKey);
+    } else {
+      setActiveVideoKey(null);
+    }
+  }, [isOpen, videoKey]);
+
+  const handleClose = () => {
+    setActiveVideoKey(null);
+    onClose();
+  };
+
   // Close on Escape key press
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -19,7 +35,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -38,7 +54,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
         padding: '20px',
         animation: 'fadeIn 0.2s ease-out',
       }}
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         style={{
@@ -101,7 +117,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close trailer"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
@@ -133,9 +149,9 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movieTitle }) => {
             background: '#000000',
           }}
         >
-          {videoKey ? (
+          {activeVideoKey ? (
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${videoKey}?autoplay=1&rel=0&modestbranding=1`}
+              src={`https://www.youtube-nocookie.com/embed/${activeVideoKey}?autoplay=1&rel=0&modestbranding=1`}
               title={movieTitle ? `${movieTitle} Trailer` : 'Movie Trailer'}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen

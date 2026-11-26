@@ -27,10 +27,27 @@ const AmbientTheaterModal = ({
   const [intensity, setIntensity] = useState('balanced');
   const [aspectRatio, setAspectRatio] = useState('16:9'); // '16:9' | '21:9'
   const [isPitchBlack, setIsPitchBlack] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeTrailerKey, setActiveTrailerKey] = useState(trailerKey);
   const theaterContainerRef = useRef(null);
+
+  // Sync active trailer key and clear immediately on close to stop background YouTube audio
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTrailerKey(trailerKey);
+    } else {
+      setActiveTrailerKey(null);
+    }
+  }, [isOpen, trailerKey]);
+
+  const handleExit = () => {
+    setActiveTrailerKey(null);
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+    }
+    onClose();
+  };
 
   // Close on Escape and manage body scroll
   useEffect(() => {
@@ -38,7 +55,7 @@ const AmbientTheaterModal = ({
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && !document.fullscreenElement) {
-        onClose();
+        handleExit();
       }
     };
 
@@ -49,7 +66,7 @@ const AmbientTheaterModal = ({
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -73,14 +90,20 @@ const AmbientTheaterModal = ({
   const toggleFullscreen = () => {
     if (!theaterContainerRef.current) return;
 
-    if (!document.fullscreenElement) {
-      theaterContainerRef.current.requestFullscreen?.().catch((err) => {
-        console.warn('Could not enter fullscreen mode:', err);
-      });
-    } else {
-      document.exitFullscreen?.().catch((err) => {
-        console.warn('Could not exit fullscreen mode:', err);
-      });
+    try {
+      if (!document.fullscreenElement) {
+        const promise = theaterContainerRef.current.requestFullscreen?.();
+        if (promise && typeof promise.catch === 'function') {
+          promise.catch(() => {});
+        }
+      } else {
+        const promise = document.exitFullscreen?.();
+        if (promise && typeof promise.catch === 'function') {
+          promise.catch(() => {});
+        }
+      }
+    } catch (err) {
+      // Gracefully ignore fullscreen permission errors
     }
   };
 
@@ -96,7 +119,7 @@ const AmbientTheaterModal = ({
       className={`ambient-theater-overlay ${isPitchBlack ? 'pitch-black' : ''}`}
       onClick={() => {
         if (showSettings) setShowSettings(false);
-        else onClose();
+        else handleExit();
       }}
     >
       <div
@@ -248,7 +271,7 @@ const AmbientTheaterModal = ({
             <button
               type="button"
               className="ambient-close-btn"
-              onClick={onClose}
+              onClick={handleExit}
               title="Exit Theater Mode (Esc)"
             >
               ✕
@@ -277,9 +300,9 @@ const AmbientTheaterModal = ({
           <div
             className={`ambient-screen-frame ${aspectRatio === '21:9' ? 'cinemascope' : 'standard'}`}
           >
-            {trailerKey ? (
+            {activeTrailerKey ? (
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
+                src={`https://www.youtube-nocookie.com/embed/${activeTrailerKey}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
                 title={`${title} - Official Trailer`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen

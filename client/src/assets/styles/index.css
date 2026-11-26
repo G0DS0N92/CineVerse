@@ -615,7 +615,7 @@ select.form-control option {
   top: calc(100% + 5px);
   left: 0;
   right: 0;
-  z-index: 120;
+  z-index: 999;
   background: linear-gradient(145deg, #131a28 0%, #0a0e17 100%);
   border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: var(--radius-md);
@@ -626,6 +626,16 @@ select.form-control option {
   gap: 3px;
   backdrop-filter: blur(12px);
   animation: statusMenuFadeIn 0.15s ease-out;
+}
+
+.movie-card.dropdown-active {
+  z-index: 999 !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+
+.movie-card.dropdown-active .movie-card-info {
+  overflow: visible !important;
 }
 
 @keyframes statusMenuFadeIn {

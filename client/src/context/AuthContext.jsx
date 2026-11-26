@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('cineverse_token') || null);
   const [loading, setLoading] = useState(true);
 
-  // Check token validity on app launch
+  // Check token validity on app launch & listen for unauthorized events
   useEffect(() => {
     const verifyUser = async () => {
       const storedToken = localStorage.getItem('cineverse_token');
@@ -35,6 +35,16 @@ export const AuthProvider = ({ children }) => {
     };
 
     verifyUser();
+
+    // Synchronize React state whenever any API call returns 401 Unauthorized
+    const handleUnauthorized = () => {
+      logout();
+    };
+
+    window.addEventListener('cineverse:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('cineverse:unauthorized', handleUnauthorized);
+    };
   }, []);
 
   // Register user
@@ -88,9 +98,11 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  // Permanently delete user account and clear session
-  const deleteAccount = async () => {
-    const { data } = await API.delete('/auth/profile');
+  // Permanently delete user account with server-verified OTP
+  const deleteAccount = async (otpCode) => {
+    const { data } = await API.delete('/auth/profile', {
+      data: { otpCode },
+    });
     if (data.success) {
       logout();
     }

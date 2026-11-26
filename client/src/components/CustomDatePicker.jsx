@@ -8,8 +8,22 @@ const MONTH_NAMES = [
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const CustomDatePicker = ({ selectedDate, onDateSelect }) => {
-  // Parse initial date or default to today
-  const initialDate = selectedDate ? new Date(selectedDate + 'T00:00:00') : new Date();
+  // Parse initial date supporting both YYYY-MM-DD and DD/MM/YYYY formats
+  const initialDate = (() => {
+    if (!selectedDate) return new Date();
+    if (typeof selectedDate === 'string' && selectedDate.includes('/')) {
+      const parts = selectedDate.split('/');
+      if (parts.length === 3) {
+        const [d, m, y] = parts;
+        const parsed = new Date(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T00:00:00`);
+        if (!isNaN(parsed.getTime())) return parsed;
+      }
+    }
+    const clean = String(selectedDate).split('T')[0];
+    const parsed = new Date(`${clean}T00:00:00`);
+    return !isNaN(parsed.getTime()) ? parsed : new Date();
+  })();
+
   const [viewYear, setViewYear] = useState(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
 

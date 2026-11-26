@@ -36,6 +36,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    deletionOtp: {
+      type: String,
+      select: false,
+    },
+    deletionOtpExpires: {
+      type: Date,
+      select: false,
+    },
   },
   {
     timestamps: true,

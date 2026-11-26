@@ -11,9 +11,17 @@ const {
   getDashboardStats,
 } = require('../controllers/watchlistController');
 const { protect } = require('../middleware/authMiddleware');
+const { createRateLimiter } = require('../middleware/rateLimitMiddleware');
 
-// Public shared watchlist endpoint (accessible without login)
-router.get('/shared/:userId', getSharedWatchlist);
+// 60 requests per minute for public shared watchlists to prevent scraping/DoS
+const sharedWatchlistLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 60,
+  message: 'Too many requests for shared watchlists. Please try again in a minute.',
+});
+
+// Public shared watchlist endpoint (accessible without login with rate limiting)
+router.get('/shared/:userId', sharedWatchlistLimiter, getSharedWatchlist);
 
 // All other watchlist and reminder operations require authentication
 router.use(protect);

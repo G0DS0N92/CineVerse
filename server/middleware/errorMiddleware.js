@@ -7,6 +7,14 @@ const notFound = (req, res, next) => {
 
 // Centralized Error Handling Middleware
 const errorHandler = (err, req, res, next) => {
+  // Handle MongoDB Duplicate Key Error (Code 11000)
+  if (err.code === 11000) {
+    return res.status(409).json({
+      success: false,
+      message: 'This movie is already in your watchlist.',
+    });
+  }
+
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
 
   res.status(statusCode).json({

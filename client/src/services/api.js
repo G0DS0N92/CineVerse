@@ -37,6 +37,9 @@ API.interceptors.response.use(
       if (!isAuthRoute) {
         localStorage.removeItem('cineverse_token');
         localStorage.removeItem('cineverse_user');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('cineverse:unauthorized'));
+        }
       }
     }
     return Promise.reject(error);

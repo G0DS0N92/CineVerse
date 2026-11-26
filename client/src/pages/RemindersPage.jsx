@@ -14,12 +14,27 @@ const formatDDMMYYYY = (dateStr) => {
   return dateStr;
 };
 
+const parseReminderTarget = (dateStr, timeStr = '20:00') => {
+  if (!dateStr) return null;
+  const cleanTime = timeStr.length === 5 ? timeStr : timeStr.padStart(5, '0');
+
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      const target = new Date(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${cleanTime}:00`);
+      if (!isNaN(target.getTime())) return target;
+    }
+  }
+
+  const clean = dateStr.split('T')[0];
+  const target = new Date(`${clean}T${cleanTime}:00`);
+  return !isNaN(target.getTime()) ? target : null;
+};
+
 const isDueOrPast = (dateStr, timeStr) => {
-  if (!dateStr) return false;
-  const time = timeStr || '20:00';
-  const cleanTime = time.length === 5 ? time : time.padStart(5, '0');
-  const target = new Date(`${dateStr.split('T')[0]}T${cleanTime}:00`);
-  return !isNaN(target.getTime()) && new Date() >= target;
+  const target = parseReminderTarget(dateStr, timeStr);
+  return target !== null && new Date() >= target;
 };
 
 const getRelativeCountdown = (dateStr, timeStr, status) => {
@@ -31,11 +46,10 @@ const getRelativeCountdown = (dateStr, timeStr, status) => {
   }
 
   const time = timeStr || '20:00';
-  const cleanTime = time.length === 5 ? time : time.padStart(5, '0');
-  const target = new Date(`${dateStr.split('T')[0]}T${cleanTime}:00`);
+  const target = parseReminderTarget(dateStr, timeStr);
   const now = new Date();
 
-  if (isNaN(target.getTime())) {
+  if (!target || isNaN(target.getTime())) {
     return { text: 'Scheduled', color: '#94a3b8', bg: 'rgba(255, 255, 255, 0.08)' };
   }
 

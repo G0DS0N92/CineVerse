@@ -173,7 +173,9 @@ const ProfilePage = () => {
     setDeleteLoading(true);
 
     try {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      // Request server-generated, time-expiring OTP stored securely on User record
+      const { data } = await API.post('/auth/request-delete-otp');
+      const code = data.otpCode;
       setGeneratedDeleteOtp(code);
       setDeleteOtpExpiry(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -183,7 +185,7 @@ const ProfilePage = () => {
       setDeleteCooldown(60);
       setToast({ message: `Deletion code sent to ${user.email}`, type: 'success' });
     } catch (err) {
-      setDeleteError(err.message || 'Failed to send verification code. Please try again.');
+      setDeleteError(err.response?.data?.message || err.message || 'Failed to send verification code. Please try again.');
     } finally {
       setDeleteLoading(false);
     }
@@ -209,15 +211,11 @@ const ProfilePage = () => {
       return;
     }
 
-    if (cleanCode !== generatedDeleteOtp) {
-      setDeleteError('Invalid verification code. Please check your email and try again.');
-      return;
-    }
-
     setDeleteLoading(true);
 
     try {
-      await deleteAccount();
+      // Pass code to backend for server-side verification before deletion
+      await deleteAccount(cleanCode);
       setShowDeleteModal(false);
       navigate('/');
     } catch (err) {
