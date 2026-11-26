@@ -192,38 +192,10 @@ const SharedWatchlistPage = () => {
   return (
     <div>
       {/* Curator Header Banner */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, rgba(24, 32, 47, 0.95), rgba(10, 13, 20, 0.95))',
-          border: '1px solid var(--border-color)',
-          borderRadius: '16px',
-          padding: '30px',
-          marginBottom: '32px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '20px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+      <div className="shared-curator-banner">
+        <div className="shared-curator-profile">
           {/* Avatar with Red Glow */}
-          <div
-            style={{
-              width: '74px',
-              height: '74px',
-              borderRadius: '50%',
-              background: '#1e293b',
-              border: '2.5px solid #e50914',
-              boxShadow: '0 0 16px rgba(229, 9, 20, 0.45)',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
+          <div className="shared-curator-avatar">
             {sharedUser.avatar ? (
               <img
                 src={sharedUser.avatar}
@@ -237,9 +209,9 @@ const SharedWatchlistPage = () => {
             )}
           </div>
 
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+              <h1 className="shared-curator-title">
                 {sharedUser.name}'s Watchlist
               </h1>
               <span
@@ -247,19 +219,20 @@ const SharedWatchlistPage = () => {
                   background: 'rgba(229, 9, 20, 0.18)',
                   color: '#ff4d4d',
                   border: '1px solid rgba(229, 9, 20, 0.35)',
-                  fontSize: '0.74rem',
+                  fontSize: '0.72rem',
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: '6px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 Public Curator
               </span>
             </div>
 
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: 0 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.86rem', margin: 0, wordBreak: 'break-word' }}>
               Curated collection of <strong>{watchlist.length}</strong> {watchlist.length === 1 ? 'title' : 'titles'}
               {sharedUser.memberSince && ` • Member since ${formatDDMMYYYY(sharedUser.memberSince)}`}
             </p>
@@ -267,17 +240,12 @@ const SharedWatchlistPage = () => {
         </div>
 
         {/* Share & Copy Link Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <div className="shared-curator-actions">
           <button
             type="button"
             onClick={handleCopyLink}
             className="btn btn-secondary"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '9px 16px',
-              borderRadius: '8px',
               borderColor: copied ? '#10b981' : undefined,
               color: copied ? '#10b981' : undefined,
             }}
@@ -301,7 +269,7 @@ const SharedWatchlistPage = () => {
           </button>
 
           {!isAuthenticated && (
-            <Link to="/register" className="btn btn-primary" style={{ padding: '9px 18px', borderRadius: '8px' }}>
+            <Link to="/register" className="btn btn-primary">
               Create Your Own
             </Link>
           )}
@@ -309,18 +277,9 @@ const SharedWatchlistPage = () => {
       </div>
 
       {/* Controls Bar: Tabs and Live Search */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '26px',
-          flexWrap: 'wrap',
-          gap: '14px',
-        }}
-      >
+      <div className="shared-controls-bar">
         {/* Status Filter Tabs */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="status-tabs-container cinema-horizontal-scroll">
           {STATUS_TABS.map((tab) => {
             const count =
               tab === 'All' ? watchlist.length : watchlist.filter((m) => m.status === tab).length;
@@ -339,7 +298,7 @@ const SharedWatchlistPage = () => {
         </div>
 
         {/* Search within this watchlist */}
-        <div style={{ minWidth: '240px', maxWidth: '320px', width: '100%' }}>
+        <div className="shared-search-wrap">
           <div
             style={{
               position: 'relative',
@@ -369,7 +328,7 @@ const SharedWatchlistPage = () => {
                 background: 'rgba(255, 255, 255, 0.04)',
                 border: '1px solid var(--border-color)',
                 borderRadius: '20px',
-                padding: '7px 14px 7px 34px',
+                padding: '8px 14px 8px 36px',
                 color: '#ffffff',
                 fontSize: '0.84rem',
                 outline: 'none',
@@ -397,13 +356,7 @@ const SharedWatchlistPage = () => {
           </span>
         </div>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))',
-            gap: '20px',
-          }}
-        >
+        <div className="shared-watchlist-grid">
           {filteredList.map((movie) => {
             const statusStyle = getStatusColor(movie.status);
             const isSavedByViewer = viewerWatchlistIds.has(movie.tmdbId);
@@ -412,37 +365,12 @@ const SharedWatchlistPage = () => {
             return (
               <div
                 key={movie._id || movie.tmdbId}
-                style={{
-                  background: 'var(--bg-card)',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border-color)',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = 'rgba(229, 9, 20, 0.4)';
-                  e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
+                className="shared-movie-card"
               >
                 {/* Poster linking to movie details */}
                 <Link
                   to={`/movies/${movie.tmdbId}`}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    height: '275px',
-                    position: 'relative',
-                    background: '#111827',
-                    overflow: 'hidden',
-                  }}
+                  className="shared-movie-poster-wrap"
                   title={`View details for ${movie.title}`}
                 >
                   {movie.posterPath ? (
@@ -450,7 +378,6 @@ const SharedWatchlistPage = () => {
                       src={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
                       alt={movie.title}
                       loading="lazy"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
                   ) : (
                     <div
@@ -511,9 +438,9 @@ const SharedWatchlistPage = () => {
                       color: statusStyle.text,
                       border: `1px solid ${statusStyle.border}`,
                       backdropFilter: 'blur(6px)',
-                      fontSize: '0.72rem',
+                      fontSize: '0.7rem',
                       fontWeight: 700,
-                      padding: '2px 8px',
+                      padding: '2px 7px',
                       borderRadius: '5px',
                       letterSpacing: '0.3px',
                     }}
@@ -523,11 +450,11 @@ const SharedWatchlistPage = () => {
                 </Link>
 
                 {/* Card Content Info */}
-                <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', flex: 1, gap: '6px' }}>
+                <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', flex: 1, gap: '5px' }}>
                   <Link to={`/movies/${movie.tmdbId}`} style={{ color: 'inherit' }}>
                     <h3
                       style={{
-                        fontSize: '0.92rem',
+                        fontSize: '0.9rem',
                         fontWeight: 700,
                         margin: 0,
                         color: '#ffffff',
@@ -541,29 +468,29 @@ const SharedWatchlistPage = () => {
                     </h3>
                   </Link>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                     <span>{movie.releaseDate ? formatDDMMYYYY(movie.releaseDate) : 'TBA'}</span>
                     {Array.isArray(movie.genres) && movie.genres.length > 0 && (
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '75px' }}>
                         {movie.genres[0]}
                       </span>
                     )}
                   </div>
 
                   {/* Action Button: Add to viewer's own watchlist */}
-                  <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
+                  <div style={{ marginTop: 'auto', paddingTop: '6px' }}>
                     {isSavedByViewer ? (
                       <button
                         type="button"
                         disabled
                         style={{
                           width: '100%',
-                          padding: '6px 8px',
+                          padding: '7px 6px',
                           background: 'rgba(16, 185, 129, 0.12)',
                           color: '#10b981',
                           border: '1px solid rgba(16, 185, 129, 0.3)',
                           borderRadius: '6px',
-                          fontSize: '0.76rem',
+                          fontSize: '0.74rem',
                           fontWeight: 700,
                           display: 'flex',
                           alignItems: 'center',
@@ -584,12 +511,12 @@ const SharedWatchlistPage = () => {
                         disabled={isSaving}
                         style={{
                           width: '100%',
-                          padding: '6px 8px',
+                          padding: '7px 6px',
                           background: 'rgba(229, 9, 20, 0.15)',
                           color: '#ff4d4d',
                           border: '1px solid rgba(229, 9, 20, 0.35)',
                           borderRadius: '6px',
-                          fontSize: '0.76rem',
+                          fontSize: '0.74rem',
                           fontWeight: 700,
                           display: 'flex',
                           alignItems: 'center',

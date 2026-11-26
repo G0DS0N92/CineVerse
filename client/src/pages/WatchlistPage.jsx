@@ -135,7 +135,7 @@ const WatchlistPage = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="watchlist-header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={() => setIsShareModalOpen(true)}
@@ -160,7 +160,7 @@ const WatchlistPage = () => {
       </div>
 
       {/* Status Filter Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+      <div className="status-tabs-container cinema-horizontal-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
         {STATUS_TABS.map((tab) => {
           const count =
             tab === 'All'
@@ -241,7 +241,7 @@ const WatchlistPage = () => {
         <div className="modal-overlay" onClick={() => setIsShareModalOpen(false)}>
           <div
             className="modal-content custom-reminder-modal"
-            style={{ maxWidth: '480px', width: '90%' }}
+            style={{ maxWidth: '480px', width: '92%', padding: '22px 18px' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -257,6 +257,7 @@ const WatchlistPage = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#e50914',
+                    flexShrink: 0,
                   }}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -267,7 +268,7 @@ const WatchlistPage = () => {
                     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                   </svg>
                 </div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#ffffff' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
                   Share Your Watchlist
                 </h3>
               </div>
@@ -280,6 +281,7 @@ const WatchlistPage = () => {
                   color: 'var(--text-muted)',
                   cursor: 'pointer',
                   fontSize: '1.2rem',
+                  padding: '4px 8px',
                 }}
               >
                 ✕
@@ -291,46 +293,19 @@ const WatchlistPage = () => {
             </p>
 
             {/* Link Copy Box */}
-            <div
-              style={{
-                background: 'rgba(0, 0, 0, 0.4)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                padding: '6px 8px 6px 12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '20px',
-              }}
-            >
+            <div className="share-modal-link-box">
               <input
                 type="text"
                 readOnly
                 value={getShareUrl()}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#f1f5f9',
-                  fontSize: '0.82rem',
-                  flex: 1,
-                  outline: 'none',
-                }}
+                className="share-modal-input"
               />
               <button
                 type="button"
                 onClick={handleCopyShareLink}
-                className="btn btn-sm"
+                className="share-modal-copy-btn"
                 style={{
                   background: linkCopied ? '#10b981' : '#e50914',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  fontWeight: 700,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease',
-                  flexShrink: 0,
                 }}
               >
                 {linkCopied ? 'Copied!' : 'Copy Link'}
@@ -342,13 +317,12 @@ const WatchlistPage = () => {
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
                 Quick Share
               </span>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="share-modal-socials">
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent('Check out my movie watchlist on CineVerse: ' + getShareUrl())}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-secondary btn-sm"
-                  style={{ fontSize: '0.78rem', padding: '6px 12px', borderRadius: '6px' }}
+                  className="btn btn-secondary btn-sm share-modal-social-btn"
                 >
                   WhatsApp
                 </a>
@@ -356,8 +330,7 @@ const WatchlistPage = () => {
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out my movie watchlist on CineVerse: ' + getShareUrl())}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-secondary btn-sm"
-                  style={{ fontSize: '0.78rem', padding: '6px 12px', borderRadius: '6px' }}
+                  className="btn btn-secondary btn-sm share-modal-social-btn"
                 >
                   X (Twitter)
                 </a>
@@ -365,8 +338,7 @@ const WatchlistPage = () => {
                   href={`https://t.me/share/url?url=${encodeURIComponent(getShareUrl())}&text=${encodeURIComponent('Check out my movie watchlist on CineVerse')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-secondary btn-sm"
-                  style={{ fontSize: '0.78rem', padding: '6px 12px', borderRadius: '6px' }}
+                  className="btn btn-secondary btn-sm share-modal-social-btn"
                 >
                   Telegram
                 </a>
