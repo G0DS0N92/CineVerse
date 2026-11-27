@@ -4,7 +4,6 @@ import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ReminderModal from '../components/ReminderModal';
 import TrailerModal from '../components/TrailerModal';
-import AmbientTheaterModal from '../components/AmbientTheaterModal';
 import StreamingProviderBadge from '../components/StreamingProviderBadge';
 import MovieCard from '../components/MovieCard';
 import Toast from '../components/Toast';
@@ -32,10 +31,9 @@ const MovieDetailPage = () => {
   const [toast, setToast] = useState(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
 
-  // Trailer & Ambient Theater states
+  // Trailer modal state
   const [trailerKey, setTrailerKey] = useState(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
-  const [isTheaterOpen, setIsTheaterOpen] = useState(false);
 
   // Watch Providers states
   const [watchProviders, setWatchProviders] = useState({});
@@ -463,46 +461,6 @@ const MovieDetailPage = () => {
 
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {/* Ambient Theater Mode Feature Button */}
-              <button
-                type="button"
-                onClick={() => setIsTheaterOpen(true)}
-                className="btn"
-                style={{
-                  padding: '10px 22px',
-                  fontSize: '0.95rem',
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, rgba(var(--accent-rgb), 0.28), rgba(var(--accent-rgb), 0.12))',
-                  color: '#ffffff',
-                  border: '1.5px solid var(--accent-primary)',
-                  boxShadow: '0 0 20px rgba(var(--accent-rgb), 0.35)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '9px',
-                  cursor: 'pointer',
-                  borderRadius: 'var(--radius-md)',
-                  transition: 'all 0.2s ease',
-                }}
-                title="Open Ambient Theater Screening with Smart Ambilight Frame"
-              >
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: 'var(--accent-primary)',
-                    boxShadow: '0 0 10px var(--accent-primary)',
-                    display: 'inline-block',
-                  }}
-                />
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <rect x="2" y="3" width="20" height="14" rx="2" />
-                  <line x1="8" y1="21" x2="16" y2="21" />
-                  <line x1="12" y1="17" x2="12" y2="21" />
-                </svg>
-                <span>Ambient Theater</span>
-              </button>
-
               {trailerKey ? (
                 <button
                   type="button"
@@ -1246,19 +1204,12 @@ const MovieDetailPage = () => {
         </div>
       )}
 
-      {/* Ambient Theater Preview Mode with Smart Ambilight Frame */}
-      <AmbientTheaterModal
-        isOpen={isTheaterOpen}
-        onClose={() => setIsTheaterOpen(false)}
-        movie={movie}
-        trailerKey={trailerKey}
-      />
-
-      {/* Trailer In-App Player Modal */}
+      {/* Trailer In-App Player Modal with Integrated Ambient Theater Ambilight */}
       <TrailerModal
         isOpen={isTrailerOpen}
         onClose={() => setIsTrailerOpen(false)}
         videoKey={trailerKey}
+        movie={movie}
         movieTitle={movie.title}
       />
 
