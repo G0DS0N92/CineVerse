@@ -101,7 +101,18 @@ const CustomDatePicker = ({ selectedDate, onDateSelect }) => {
     const isPast = thisDate < today;
     const isToday = thisDate.getTime() === today.getTime();
     const dateStr = formatYMD(viewYear, viewMonth, d);
-    const isSelected = selectedDate === dateStr;
+    const isSelected = (() => {
+      if (!selectedDate) return false;
+      if (selectedDate === dateStr) return true;
+      if (typeof selectedDate === 'string' && selectedDate.includes('/')) {
+        const parts = selectedDate.split('/');
+        if (parts.length === 3) {
+          const formatted = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          return formatted === dateStr;
+        }
+      }
+      return false;
+    })();
 
     days.push({
       day: d,

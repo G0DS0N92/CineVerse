@@ -2,6 +2,39 @@ const mongoose = require('mongoose');
 const Watchlist = require('../models/Watchlist');
 const User = require('../models/User');
 
+const TMDB_GENRES = {
+  28: 'Action',
+  12: 'Adventure',
+  16: 'Animation',
+  35: 'Comedy',
+  80: 'Crime',
+  99: 'Documentary',
+  18: 'Drama',
+  10751: 'Family',
+  14: 'Fantasy',
+  36: 'History',
+  27: 'Horror',
+  10402: 'Music',
+  9648: 'Mystery',
+  10749: 'Romance',
+  878: 'Sci-Fi',
+  10770: 'TV Movie',
+  53: 'Thriller',
+  10752: 'War',
+  37: 'Western',
+};
+
+// Helper: Sanitize numeric genre IDs into readable genre names
+const sanitizeGenres = (genres) => {
+  if (!Array.isArray(genres)) return [];
+  return genres.map((g) => {
+    if (typeof g === 'number' || (!isNaN(Number(g)) && TMDB_GENRES[Number(g)])) {
+      return TMDB_GENRES[Number(g)] || String(g);
+    }
+    return String(g);
+  });
+};
+
 // @desc    Get all watchlist items for logged-in user
 // @route   GET /api/watchlist
 // @access  Private
@@ -136,7 +169,7 @@ const addToWatchlist = async (req, res, next) => {
       overview: overview || '',
       releaseDate: releaseDate || '',
       voteAverage: voteAverage || 0,
-      genres: Array.isArray(genres) ? genres : [],
+      genres: sanitizeGenres(genres),
       status: status || 'Planned to Watch',
       certification: certification || '',
       adult: adult === true,

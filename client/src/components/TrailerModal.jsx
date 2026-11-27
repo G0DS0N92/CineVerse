@@ -485,7 +485,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movie, movieTitle }) => {
                     ? `url(${backdropUrl || posterUrl})`
                     : undefined,
                 backgroundColor:
-                  ambilightMode === 'accent' ? activeTheme.color : undefined,
+                  ambilightMode === 'accent' ? activeTheme?.color || 'var(--accent-primary)' : undefined,
               }}
             />
           )}

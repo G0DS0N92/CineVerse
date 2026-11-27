@@ -4,6 +4,7 @@ import MovieCard from '../components/MovieCard';
 import Toast from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { resolveMovieGenres } from '../utils/genreMap';
 
 const CATEGORIES = [
   {
@@ -256,7 +257,7 @@ const DiscoveryPage = () => {
         overview: movie.overview,
         releaseDate: movie.release_date,
         voteAverage: movie.vote_average,
-        genres: movie.genre_ids ? movie.genre_ids.map(String) : [],
+        genres: resolveMovieGenres(movie),
         status: 'Planned to Watch',
         adult: movie.adult === true,
       };
