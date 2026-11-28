@@ -18,6 +18,7 @@ import WatchlistPage from './pages/WatchlistPage';
 import SharedWatchlistPage from './pages/SharedWatchlistPage';
 import RemindersPage from './pages/RemindersPage';
 import ProfilePage from './pages/ProfilePage';
+import MovieNightLobbyPage from './pages/MovieNightLobbyPage';
 
 function App() {
   return (
@@ -33,6 +34,8 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/discover" element={<DiscoveryPage />} />
               <Route path="/movies/:id" element={<MovieDetailPage />} />
+              <Route path="/lobby" element={<MovieNightLobbyPage />} />
+              <Route path="/lobby/:code" element={<MovieNightLobbyPage />} />
               <Route path="/shared/watchlist/:userId" element={<SharedWatchlistPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />

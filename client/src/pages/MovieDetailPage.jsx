@@ -6,6 +6,7 @@ import ReminderModal from '../components/ReminderModal';
 import TrailerModal from '../components/TrailerModal';
 import StreamingProviderBadge from '../components/StreamingProviderBadge';
 import MovieCard from '../components/MovieCard';
+import CinemaTicketModal from '../components/CinemaTicketModal';
 import Toast from '../components/Toast';
 
 const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
@@ -30,6 +31,8 @@ const MovieDetailPage = () => {
   const [isReminderOpen, setIsReminderOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [watchlistItem, setWatchlistItem] = useState(null);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   // Trailer modal state
   const [trailerKey, setTrailerKey] = useState(null);
@@ -140,6 +143,7 @@ const MovieDetailPage = () => {
       if (!isAuthenticated) {
         setWatchlistIds(new Set());
         setIsInWatchlist(false);
+        setWatchlistItem(null);
         return;
       }
       try {
@@ -149,6 +153,8 @@ const MovieDetailPage = () => {
           setWatchlistIds(idSet);
           const currentTmdbId = Number(id) || movie?.id;
           setIsInWatchlist(idSet.has(currentTmdbId));
+          const match = data.data.find((item) => item.tmdbId === currentTmdbId);
+          setWatchlistItem(match || null);
         }
       } catch (err) {
         console.error('Failed to check watchlist status', err);
@@ -545,6 +551,36 @@ const MovieDetailPage = () => {
               >
                 Schedule Reminder
               </button>
+
+              {watchlistItem?.status === 'Watched' && (
+                <button
+                  type="button"
+                  onClick={() => setIsTicketModalOpen(true)}
+                  className="btn"
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.22), rgba(212, 175, 55, 0.06))',
+                    color: '#f3e5ab',
+                    border: '1px solid rgba(212, 175, 55, 0.5)',
+                    boxShadow: '0 0 16px rgba(212, 175, 55, 0.2)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                  }}
+                  title="View Collectible Cinema Ticket Stub"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <rect x="2" y="2" width="20" height="20" rx="2" />
+                    <line x1="7" y1="2" x2="7" y2="22" />
+                    <line x1="17" y1="2" x2="17" y2="22" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                  </svg>
+                  <span>Admit One Pass</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1219,6 +1255,15 @@ const MovieDetailPage = () => {
         onClose={() => setIsReminderOpen(false)}
         movie={movie}
         onSave={handleSaveReminder}
+      />
+
+      {/* Collectible Cinema Ticket Stub Modal */}
+      <CinemaTicketModal
+        isOpen={isTicketModalOpen}
+        onClose={() => setIsTicketModalOpen(false)}
+        movie={movie}
+        watchDate={watchlistItem?.watchedAt || watchlistItem?.updatedAt}
+        userRating={movie.vote_average}
       />
 
       {/* Center-Bottom Floating Toast Notification */}

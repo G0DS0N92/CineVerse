@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import CinemaTicketModal from './CinemaTicketModal';
 
 const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
@@ -18,6 +19,7 @@ const MovieCard = ({
   onStatusChange,
   onDelete,
   onOpenReminder,
+  onOpenTicketStub,
 }) => {
   // Support both TMDB object format (poster_path, vote_average)
   // and MongoDB Watchlist item format (posterPath, voteAverage)
@@ -39,7 +41,20 @@ const MovieCard = ({
 
   // Custom status dropdown state
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const handleTicketClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (onOpenTicketStub) {
+      onOpenTicketStub(movie);
+    } else {
+      setIsTicketModalOpen(true);
+    }
+  };
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -163,6 +178,24 @@ const MovieCard = ({
               <span>{Number(rating).toFixed(1)}</span>
             </div>
           ) : null}
+
+          {/* Collectible Ticket Pass Ribbon for Watched movies */}
+          {movie.status === 'Watched' && (
+            <button
+              type="button"
+              className="movie-ticket-badge-btn"
+              onClick={handleTicketClick}
+              title="View Collectible Cinema Ticket Stub"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <rect x="2" y="2" width="20" height="20" rx="2" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+              <span>Pass</span>
+            </button>
+          )}
         </div>
       </Link>
 
@@ -309,14 +342,56 @@ const MovieCard = ({
             </div>
 
             <div style={{ display: 'flex', gap: '6px' }}>
+              {movie.status === 'Watched' && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    borderColor: 'rgba(212, 175, 55, 0.45)',
+                    color: '#f3e5ab',
+                    background: 'rgba(212, 175, 55, 0.08)',
+                  }}
+                  onClick={handleTicketClick}
+                  title="View Collectible Cinema Ticket Stub"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <rect x="2" y="2" width="20" height="20" rx="2" />
+                    <line x1="7" y1="2" x2="7" y2="22" />
+                    <line x1="17" y1="2" x2="17" y2="22" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                  </svg>
+                  <span>Pass</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
-                style={{ flex: 1 }}
+                style={{
+                  flex: movie.status === 'Watched' ? '0 0 36px' : 1,
+                  padding: movie.status === 'Watched' ? 0 : undefined,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
                 onClick={() => onOpenReminder && onOpenReminder(movie)}
                 title="Schedule Watch Reminder"
               >
-                {movie.reminderDate ? 'Edit Reminder' : 'Remind'}
+                {movie.status === 'Watched' ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                ) : movie.reminderDate ? (
+                  'Edit Reminder'
+                ) : (
+                  'Remind'
+                )}
               </button>
 
               <button
@@ -368,6 +443,13 @@ const MovieCard = ({
           </div>
         )}
       </div>
+
+      {/* Fallback Ticket Stub Modal */}
+      <CinemaTicketModal
+        isOpen={isTicketModalOpen}
+        onClose={() => setIsTicketModalOpen(false)}
+        movie={movie}
+      />
     </div>
   );
 };

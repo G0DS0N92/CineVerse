@@ -62,6 +62,11 @@ const Navbar = () => {
               Discover
             </NavLink>
           </li>
+          <li>
+            <NavLink to="/lobby" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              Movie Night
+            </NavLink>
+          </li>
 
           {isAuthenticated && (
             <>

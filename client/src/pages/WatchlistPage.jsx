@@ -3,22 +3,36 @@ import API from '../services/api';
 import MovieCard from '../components/MovieCard';
 import ReminderModal from '../components/ReminderModal';
 import ConfirmModal from '../components/ConfirmModal';
+import CinemaTicketModal from '../components/CinemaTicketModal';
+import CinemaTicketStub from '../components/CinemaTicketStub';
 import Toast from '../components/Toast';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const STATUS_TABS = ['All', 'Planned to Watch', 'Currently Watching', 'Watched'];
 
 const WatchlistPage = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [watchlist, setWatchlist] = useState([]);
   const [activeTab, setActiveTab] = useState('All');
+  const [ticketViewMode, setTicketViewMode] = useState('grid'); // 'grid' | 'tickets'
+  const [selectedMovieForTicket, setSelectedMovieForTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [selectedMovieForReminder, setSelectedMovieForReminder] = useState(null);
   const [movieToDelete, setMovieToDelete] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  // Sync tab from query param if provided (e.g. ?tab=Watched)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && STATUS_TABS.includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
 
   // Fetch Watchlist items
   const fetchWatchlist = async () => {
@@ -159,27 +173,72 @@ const WatchlistPage = () => {
         </div>
       </div>
 
-      {/* Status Filter Tabs */}
-      <div className="status-tabs-container cinema-horizontal-scroll" style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-        {STATUS_TABS.map((tab) => {
-          const count =
-            tab === 'All'
-              ? watchlist.length
-              : watchlist.filter((m) => m.status === tab).length;
+      {/* Status Filter Tabs & Watched View Mode Toggle */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+        <div className="status-tabs-container cinema-horizontal-scroll" style={{ display: 'flex', gap: '8px' }}>
+          {STATUS_TABS.map((tab) => {
+            const count =
+              tab === 'All'
+                ? watchlist.length
+                : watchlist.filter((m) => m.status === tab).length;
 
-          return (
+            return (
+              <button
+                key={tab}
+                className={`btn btn-sm ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab} ({count})
+              </button>
+            );
+          })}
+        </div>
+
+        {/* View Mode Toggle when viewing Watched Movies */}
+        {activeTab === 'Watched' && filteredList.length > 0 && (
+          <div
+            style={{
+              display: 'inline-flex',
+              background: 'rgba(255, 255, 255, 0.05)',
+              padding: '3px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-color)',
+            }}
+          >
             <button
-              key={tab}
-              className={`btn btn-sm ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setActiveTab(tab)}
+              type="button"
+              className={`btn btn-sm ${ticketViewMode === 'grid' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '5px 12px', fontSize: '0.82rem', borderRadius: 'var(--radius-sm)' }}
+              onClick={() => setTicketViewMode('grid')}
             >
-              {tab} ({count})
+              Cards
             </button>
-          );
-        })}
+            <button
+              type="button"
+              className={`btn btn-sm ${ticketViewMode === 'tickets' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{
+                padding: '5px 12px',
+                fontSize: '0.82rem',
+                borderRadius: 'var(--radius-sm)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+              onClick={() => setTicketViewMode('tickets')}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <rect x="2" y="2" width="20" height="20" rx="2" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+              <span>Ticket Passes ({filteredList.length})</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Watchlist Grid */}
+      {/* Watchlist Grid or Ticket Passes Gallery */}
       {loading ? (
         <div className="loading-container">
           <div className="spinner"></div>
@@ -198,6 +257,33 @@ const WatchlistPage = () => {
             Explore Catalogue
           </Link>
         </div>
+      ) : activeTab === 'Watched' && ticketViewMode === 'tickets' ? (
+        /* Collectible Cinema Ticket Stubs Gallery */
+        <div className="ticket-passes-collection-view">
+          <div className="ticket-collection-banner">
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f3e5ab' }}>
+                Collectible Cinema Archive Passes
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                Your personal digital collection of verified cinema screening ticket stubs. Download high-res PNG passes anytime.
+              </p>
+            </div>
+          </div>
+
+          <div className="ticket-passes-stack">
+            {filteredList.map((movie) => (
+              <div key={movie._id} className="ticket-gallery-item">
+                <CinemaTicketStub
+                  movie={movie}
+                  watchDate={movie.watchedAt || movie.updatedAt || movie.releaseDate}
+                  userRating={movie.voteAverage}
+                  showDownloadButton={true}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <div className="movies-grid">
           {filteredList.map((movie) => (
@@ -208,10 +294,18 @@ const WatchlistPage = () => {
               onStatusChange={handleStatusChange}
               onDelete={() => handleDeleteRequest(movie)}
               onOpenReminder={(m) => setSelectedMovieForReminder(m)}
+              onOpenTicketStub={(m) => setSelectedMovieForTicket(m)}
             />
           ))}
         </div>
       )}
+
+      {/* Collectible Ticket Stub Modal */}
+      <CinemaTicketModal
+        isOpen={!!selectedMovieForTicket}
+        onClose={() => setSelectedMovieForTicket(null)}
+        movie={selectedMovieForTicket}
+      />
 
       {/* Reminder Modal */}
       <ReminderModal

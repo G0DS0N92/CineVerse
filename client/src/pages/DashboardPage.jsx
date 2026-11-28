@@ -104,17 +104,21 @@ const DashboardPage = () => {
           }
           color="var(--accent-primary)"
         />
-        <StatCard
-          title="Movies Watched"
-          value={stats?.watched || 0}
-          icon={
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-          }
-          color="var(--accent-green)"
-        />
+        <Link to="/watchlist?tab=Watched" style={{ textDecoration: 'none', color: 'inherit' }} title="View Collectible Cinema Ticket Stubs">
+          <StatCard
+            title="Movies Watched (Passes)"
+            value={stats?.watched || 0}
+            icon={
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="2" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+            }
+            color="var(--accent-gold)"
+          />
+        </Link>
       </div>
 
       {/* Two Column Layout: Upcoming Reminders & Recently Added */}

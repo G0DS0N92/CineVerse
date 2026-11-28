@@ -7,6 +7,7 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const authRoutes = require('./routes/authRoutes');
 const movieRoutes = require('./routes/movieRoutes');
 const watchlistRoutes = require('./routes/watchlistRoutes');
+const lobbyRoutes = require('./routes/lobbyRoutes');
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/watchlist', watchlistRoutes);
+app.use('/api/lobby', lobbyRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

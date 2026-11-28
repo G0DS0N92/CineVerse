@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Toast from '../components/Toast';
 import { sendAccountDeletionOTP } from '../services/emailService';
 
@@ -422,6 +422,69 @@ const ProfilePage = () => {
         </form>
 
         <hr style={{ borderColor: 'var(--border-color)', margin: '28px 0' }} />
+
+        {/* Collectible Cinema Passes Banner */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(15, 21, 34, 0.95))',
+            border: '1px solid rgba(212, 175, 55, 0.35)',
+            borderRadius: 'var(--radius-md)',
+            padding: '18px 20px',
+            marginBottom: '28px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '14px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '10px',
+                background: 'rgba(212, 175, 55, 0.15)',
+                border: '1px solid rgba(212, 175, 55, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#f3e5ab',
+                flexShrink: 0,
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="2" width="20" height="20" rx="2" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+            </div>
+            <div>
+              <h4 style={{ color: '#f3e5ab', fontSize: '1rem', fontWeight: 700, margin: '0 0 4px 0' }}>
+                Collectible Cinema Passes
+              </h4>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', margin: 0 }}>
+                View, collect, and export high-resolution Admit One passes for all your watched screenings.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to="/watchlist?tab=Watched"
+            className="btn btn-secondary btn-sm"
+            style={{
+              borderColor: 'rgba(212, 175, 55, 0.5)',
+              color: '#f3e5ab',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>View Ticket Collection</span>
+            <span>&rarr;</span>
+          </Link>
+        </div>
 
         {/* Cinema Glow Accent Switcher Settings */}
         <div style={{ marginBottom: '28px' }}>
