@@ -378,7 +378,7 @@ const WatchlistPage = () => {
                   padding: '4px 8px',
                 }}
               >
-                ✕
+                &times;
               </button>
             </div>
 

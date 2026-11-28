@@ -307,13 +307,13 @@ const RegisterPage = () => {
                   width: '64px',
                   height: '64px',
                   borderRadius: '50%',
-                  background: 'rgba(229, 9, 20, 0.15)',
-                  border: '2px solid rgba(229, 9, 20, 0.4)',
+                  background: 'rgba(var(--accent-rgb), 0.15)',
+                  border: '2px solid rgba(var(--accent-rgb), 0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 16px',
-                  boxShadow: '0 0 20px rgba(229, 9, 20, 0.3)',
+                  boxShadow: '0 0 20px rgba(var(--accent-rgb), 0.3)',
                 }}
               >
                 <svg
@@ -321,7 +321,7 @@ const RegisterPage = () => {
                   height="28"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#ff4d4d"
+                  stroke="var(--accent-primary)"
                   strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -382,8 +382,8 @@ const RegisterPage = () => {
                     padding: '14px 10px',
                     color: '#ffffff',
                     background: '#0a0e17',
-                    border: '2px solid rgba(229, 9, 20, 0.5)',
-                    boxShadow: '0 0 16px rgba(229, 9, 20, 0.2)',
+                    border: '2px solid rgba(var(--accent-rgb), 0.5)',
+                    boxShadow: '0 0 16px rgba(var(--accent-rgb), 0.2)',
                     borderRadius: 'var(--radius-md)',
                   }}
                   required

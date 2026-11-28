@@ -136,7 +136,7 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
                       padding: '9px 12px',
                       fontSize: '0.95rem',
                       background: 'rgba(10, 14, 22, 0.8)',
-                      borderColor: 'rgba(229, 9, 20, 0.25)',
+                      borderColor: 'rgba(var(--accent-rgb), 0.25)',
                     }}
                     value={reminderTime}
                     onChange={(e) => setReminderTime(e.target.value)}
@@ -162,7 +162,7 @@ const ReminderModal = ({ isOpen, onClose, movie, onSave }) => {
                       maxHeight: '180px',
                       transition: 'height 0.12s ease',
                       background: 'rgba(10, 14, 22, 0.8)',
-                      borderColor: 'rgba(229, 9, 20, 0.25)',
+                      borderColor: 'rgba(var(--accent-rgb), 0.25)',
                     }}
                   />
                 </div>

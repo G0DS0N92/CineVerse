@@ -121,6 +121,60 @@ const DashboardPage = () => {
         </Link>
       </div>
 
+      {/* Movie Night Group Lobby Banner */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, rgba(var(--accent-rgb), 0.15) 0%, rgba(15, 21, 34, 0.95) 100%)',
+          border: '1px solid rgba(var(--accent-rgb), 0.35)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '20px 28px',
+          marginTop: '32px',
+          marginBottom: '8px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div
+            style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
+              background: 'rgba(var(--accent-rgb), 0.18)',
+              border: '1px solid rgba(var(--accent-rgb), 0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--accent-primary)',
+              flexShrink: 0,
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 4px 0', color: '#ffffff' }}>
+              Movie Night Group Voting Lobby
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>
+              Planning to watch with friends tonight? Host a room, invite friends, and crown the winner through live voting.
+            </p>
+          </div>
+        </div>
+
+        <Link to="/lobby" className="btn btn-primary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <span>Open Lobby Hub</span>
+          <span>&rarr;</span>
+        </Link>
+      </div>
+
       {/* Two Column Layout: Upcoming Reminders & Recently Added */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '28px', marginTop: '36px' }}>
         {/* Upcoming Reminders Section */}
@@ -226,8 +280,11 @@ const DashboardPage = () => {
                     )}
                     <div>
                       <strong style={{ fontSize: '0.95rem' }}>{item.title}</strong>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        ★ {item.voteAverage ? Number(item.voteAverage).toFixed(1) : 'N/A'}
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--accent-gold)">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                        <span>{item.voteAverage ? Number(item.voteAverage).toFixed(1) : 'N/A'}</span>
                       </div>
                     </div>
                   </div>

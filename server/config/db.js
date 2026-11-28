@@ -9,7 +9,7 @@ const connectDB = async () => {
   try {
     const uri = process.env.MONGODB_URI;
     if (!uri || uri.includes('username:password')) {
-      console.warn('⚠️  MongoDB URI not configured or contains placeholder in server/.env');
+      console.warn('[Warning] MongoDB URI not configured or contains placeholder in server/.env');
       return;
     }
 
@@ -17,9 +17,9 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000,
       maxPoolSize: 10,
     });
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`[Database] MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
+    console.error(`[Database Error] MongoDB Connection Error: ${error.message}`);
   }
 };
 

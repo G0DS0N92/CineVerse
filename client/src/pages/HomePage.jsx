@@ -357,8 +357,11 @@ const HomePage = () => {
                 <span>In Theaters:</span>
                 <strong style={{ color: '#ffffff' }}>{activeSlide.release_date}</strong>
                 {activeSlide.vote_average > 0 && (
-                  <span style={{ color: 'var(--accent-gold)' }}>
-                    ★ {Number(activeSlide.vote_average).toFixed(1)}
+                  <span style={{ color: 'var(--accent-gold)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                    <span>{Number(activeSlide.vote_average).toFixed(1)}</span>
                   </span>
                 )}
               </>
@@ -504,7 +507,7 @@ const HomePage = () => {
       </section>
 
       {/* ========================================================
-          FOUR HORIZONTAL FEATURE TAGS (ALL IN ONE LINE)
+          FIVE HORIZONTAL FEATURE TAGS (ALL IN ONE LINE)
           ======================================================== */}
       <section className="feature-cards-grid-modern">
         <Link to="/discover" className="feature-card-modern">
@@ -526,6 +529,20 @@ const HomePage = () => {
           </div>
           <div className="feature-card-text">
             <h3>Curate Watchlists</h3>
+          </div>
+        </Link>
+
+        <Link to="/lobby" className="feature-card-modern">
+          <div className="feature-card-icon-box">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div className="feature-card-text">
+            <h3>Movie Night Lobby</h3>
           </div>
         </Link>
 
@@ -592,6 +609,72 @@ const HomePage = () => {
             ))}
           </div>
         )}
+      </section>
+
+      {/* ========================================================
+          CINEMA VAULT SIGNATURE FEATURES SHOWCASE
+          ======================================================== */}
+      <section className="home-vault-section">
+        <div className="section-header-modern">
+          <div className="section-title-wrap">
+            <div className="section-title-bar" />
+            <div className="section-title-text">
+              <h2>Signature Cinema Experience</h2>
+              <p>Cutting-edge tools crafted for true cinephiles</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="vault-features-grid">
+          <div className="vault-feature-card">
+            <div className="vault-icon-badge glow-red">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </div>
+            <h3>Smart Ambilight Frame</h3>
+            <p>Real-time edge color sampling casts dynamic ambient glow matching trailer previews on any screen.</p>
+          </div>
+
+          <div className="vault-feature-card">
+            <div className="vault-icon-badge glow-gold">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <rect x="2" y="2" width="20" height="20" rx="2" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+            </div>
+            <h3>Collectible Ticket Passes</h3>
+            <p>Perforated digital tickets for all watched films with seat assignments, gold seals, and 1-click PNG exports.</p>
+          </div>
+
+          <div className="vault-feature-card">
+            <div className="vault-icon-badge glow-blue">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <h3>Movie Night Voting Lobby</h3>
+            <p>Create real-time rooms with friends to nominate titles, vote simultaneously, and crown consensus winners.</p>
+          </div>
+
+          <div className="vault-feature-card">
+            <div className="vault-icon-badge glow-green">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </div>
+            <h3>Smart Premiere Reminders</h3>
+            <p>Schedule alerts for theater premiers and streaming arrivals so you never miss what matters.</p>
+          </div>
+        </div>
       </section>
 
       {/* Reminder Schedule Modal for Hero & Trending Movies */}

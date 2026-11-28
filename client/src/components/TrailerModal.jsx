@@ -412,7 +412,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movie, movieTitle }) => {
                 if (!isAmbientTheater) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
               }}
             >
-              ✕
+              &times;
             </button>
 
             {/* Ambilight Settings Dropdown Panel */}
@@ -420,7 +420,7 @@ const TrailerModal = ({ isOpen, onClose, videoKey, movie, movieTitle }) => {
               <div className="ambient-settings-panel" onClick={(e) => e.stopPropagation()}>
                 <div className="ambient-panel-header">
                   <h4>Ambilight Settings</h4>
-                  <button type="button" onClick={() => setShowSettings(false)}>✕</button>
+                  <button type="button" onClick={() => setShowSettings(false)}>&times;</button>
                 </div>
 
                 <div className="ambient-setting-group">

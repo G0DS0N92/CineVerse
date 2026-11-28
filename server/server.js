@@ -68,8 +68,8 @@ const PORT = process.env.PORT || 5000;
 // Start server only when running locally (not in Vercel serverless environment)
 if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`🎬 CineVerse Server running on port ${PORT}`);
-    console.log(`🔗 Health check available at http://localhost:${PORT}/api/health`);
+    console.log(`[CineVerse Server] running on port ${PORT}`);
+    console.log(`[Health check] available at http://localhost:${PORT}/api/health`);
   });
 }
 

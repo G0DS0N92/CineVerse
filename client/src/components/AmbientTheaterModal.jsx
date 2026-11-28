@@ -137,7 +137,12 @@ const AmbientTheaterModal = ({
               <h2 className="ambient-title">{title}</h2>
               {releaseYear && <span className="ambient-year">({releaseYear})</span>}
               {movie.vote_average > 0 && (
-                <span className="ambient-rating">★ {Number(movie.vote_average).toFixed(1)}</span>
+                <span className="ambient-rating" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                  <span>{Number(movie.vote_average).toFixed(1)}</span>
+                </span>
               )}
             </div>
           </div>
@@ -274,7 +279,7 @@ const AmbientTheaterModal = ({
               onClick={handleExit}
               title="Exit Theater Mode (Esc)"
             >
-              ✕
+              &times;
             </button>
           </div>
         </div>

@@ -738,7 +738,7 @@ const ProfilePage = () => {
               }}
               title="Cancel"
             >
-              ✕
+              &times;
             </button>
 
             {/* Modal Step 1: Warning & Send OTP */}
